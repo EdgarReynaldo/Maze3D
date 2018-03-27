@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Maze3D_Linux" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="Maze3D_Linux_Debug" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add option="-lallegro_monolith-debug" />
+					<Add option="`pkg-config --libs allegro_monolith-debug-5`" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="Maze3D_Linux" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-lallegro_monolith" />
+					<Add option="`pkg-config --libs allegro_monolith-5`" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add directory="/usr/local/include" />
+		</Compiler>
+		<Linker>
+			<Add directory="/usr/local/lib" />
+		</Linker>
+		<Unit filename="src/Camera.cpp" />
+		<Unit filename="src/Camera.hpp" />
+		<Unit filename="src/Cube.cpp" />
+		<Unit filename="src/Cube.hpp" />
+		<Unit filename="src/Globals.cpp" />
+		<Unit filename="src/Globals.hpp" />
+		<Unit filename="src/Maze3DMain.cpp" />
+		<Unit filename="src/MazeRoom.cpp" />
+		<Unit filename="src/MazeRoom.hpp" />
+		<Unit filename="src/Texture.cpp" />
+		<Unit filename="src/Texture.hpp" />
+		<Unit filename="src/Vec3D.cpp" />
+		<Unit filename="src/Vec3D.hpp" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
