@@ -6,7 +6,7 @@
 
 
 #include <cassert>
-
+#include <cmath>
 
 
 FACE_TYPE GetFaceType(ROOM_FACE rf) {
@@ -88,15 +88,15 @@ Face* Maze::GetFace(int index) {
 
 
 int Maze::GetFaceIndex(int floor , int row , int col , ROOM_FACE face) {
-   
+
    /// We have 3 sections in our face array - first is up down second is forwards backwards third is right left
-   
+
    ROOM_DIRECTION dir = GetRoomDirection(face);/// positive or negative
    FACE_TYPE type = GetFaceType(face);/// axis type
-   
+
    int start_index = face_info[type].index;
    int stop_index = start_index + face_info[type].size;
-   
+
    if (dir == ROOM_POSITIVE) {
       switch (type) {
       case FACE_UPDOWN :
@@ -113,7 +113,7 @@ int Maze::GetFaceIndex(int floor , int row , int col , ROOM_FACE face) {
          break;
       }
    }
-   
+
    int index = start_index;
    switch (type) {
    case FACE_UPDOWN :
@@ -129,9 +129,9 @@ int Maze::GetFaceIndex(int floor , int row , int col , ROOM_FACE face) {
       assert(0);
       break;
    }
-   
+
    assert(index < stop_index);
-   
+
    return index;
 }
 
@@ -186,53 +186,53 @@ void Maze::ClearMaze() {
 
 bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_deep) {
    ClearMaze();
-   
+
    nrooms_wide = abs(num_rooms_wide);
    nrooms_tall = abs(num_rooms_tall);
    nrooms_deep = abs(num_rooms_deep);
    nrooms_total = nrooms_tall*nrooms_wide*nrooms_deep;
-   
+
    assert(nrooms_total > 0);
-   
+
    floor_area = nrooms_wide*nrooms_deep;
    side_area = nrooms_tall*nrooms_deep;
    front_area = nrooms_wide*nrooms_tall;
-   
+
    rooms.resize(nrooms_total);
    /// Count number of faces
    int face_count = 3*nrooms_total;/// Each room has a west, south, and down face
    face_count += side_area;/// Add in the faces on the east
    face_count += front_area;/// Add in the faces on the north
    face_count += floor_area;/// Add in the faces on the ceiling
-   
+
    faces.resize(face_count);
-   
+
    /** Setup our face indices */
-   
+
    /// Bottom / Top faces are stored in the first third of the vector
    face_info[0].index = 0;
 
    face_info[0].size = (nrooms_tall + 1)*floor_area;/// There are n + 1 floors
-   
+
    /// North / South faces are stored in the second third of the vector
    face_info[1].index = face_info[0].index + face_info[0].size;
-   
+
    face_info[1].size = (nrooms_deep + 1)*front_area;
-   
+
    /// West / East faces are stored in the third third of the vector
    face_info[2].index = face_info[1].index + face_info[1].size;
 
    face_info[2].size = (nrooms_wide + 1)*side_area;
-   
+
    assert(face_info[2].index + face_info[2].size == (int)faces.size());/// Make sure our indices and sizes are correct
 
    /// Setup our vertice array
    nverts_total = NUM_FACE_CORNERS*(nrooms_tall + 1)*(nrooms_deep + 1)*(nrooms_wide + 1);
-   
+
    vertices.resize(nverts_total);
-   
+
    int index = 0;
-   
+
    for (int y = 0 ; y < num_rooms_tall + 1 ; ++y) {
       for (int z = 0 ; z < num_rooms_deep + 1 ; ++z) {
          for (int x = 0 ; x < num_rooms_wide + 1 ; ++x) {
@@ -241,7 +241,7 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
          }
       }
    }
-   
+
    /// For each room, populate it's face pointers and the face's room pointers
    index = 0;
    for (int y = 0 ; y < num_rooms_tall ; ++y) {
@@ -250,7 +250,7 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
             /// Each room has six face pointers
             /// Each face has two room pointers
             Room* r = &rooms[index];
-            
+
             for (int i = 0 ; i < NUM_ROOM_FACES ; ++i) {
                Face* f = GetFace(GetFaceIndex(y,z,x , (ROOM_FACE)i));
                assert(f);
@@ -263,7 +263,7 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
                   f->SetVertex((FACE_CORNER)j , vtx);
                }
             }
-            
+
             ++index;
          }
       }

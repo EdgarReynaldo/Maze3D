@@ -9,6 +9,8 @@
 #include "GL/gl.h"
 
 #include <vector>
+#include <cstring>
+
 
 #include "Vec3D.hpp"
 
@@ -54,13 +56,13 @@ struct Vec3D;
 class Face {
    Room* rooms[ROOM_NUM_DIRECTIONS];
    Vec3D* v[NUM_FACE_CORNERS];
-   
+
    GLuint texidpos;/// Texture id for the POSITIVE direction
    GLuint texidneg;/// Texture id for the NEGATIVE direction
-   
+
 public :
    Face();
-   
+
    void SetRoom(ROOM_DIRECTION dir , Room* room);
    void SetVertex(FACE_CORNER corner , Vec3D* vtx);
 };
@@ -69,19 +71,19 @@ public :
 
 class Room {
    Face* faces[NUM_ROOM_FACES];
-   
+
 public :
-   
+
 ///   Room();
    Room() :
          faces()
    {
       memset(faces , 0 , sizeof(Face)*NUM_ROOM_FACES);
    }
-   
-   
+
+
    void SetFace(ROOM_FACE room_dir , Face* face);
-   
+
 };
 
 
@@ -100,18 +102,17 @@ protected :
    int floor_area;/// width * depth
    int side_area;/// height * depth
    int front_area;/// width * height
-   
+
    struct FaceInfo {
       int index;
       int size;
       FaceInfo() : index(-1) , size(0) {}
    };
-   
+
    FaceInfo face_info[NUM_FACE_TYPES];
-   
-   
+
 ///   Cube unit_cube;
-   
+
 ///   Maze();
 
 
@@ -120,7 +121,7 @@ protected :
 
    Face* GetFace(int index);
    int GetFaceIndex(int floor , int row , int col , ROOM_FACE face);
-   
+
    Vec3D* GetVertex(int index);
    int GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner);
 
@@ -142,16 +143,16 @@ public :
          front_area(0),
          face_info()
    {}
-   
+
    ~Maze();
-   
+
 
 
    void ClearMaze();
    bool CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_deep);
-   
-   
-   
+
+
+
 };
 
 
