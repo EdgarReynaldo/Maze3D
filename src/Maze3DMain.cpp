@@ -18,15 +18,23 @@
 
 
 #include "MazeRoom.hpp"
+#include "Globals.hpp"
+
 
 int main(int argc , char** argv) {
+   
+   std::vector<Face> fvec;
+   fvec.clear();
+   fvec.resize(6);
+   
+   Maze mz;
+   
+   mz.CreateMaze(1,1,1);
+   
    
    (void)argc;
    (void)argv;
 
-   int ww = 800;
-   int wh = 600;
-   
    if (!al_init()) {return 1;}
 
    if (!al_init_primitives_addon()) {return 2;}

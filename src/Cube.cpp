@@ -49,7 +49,11 @@ CubeFace::CubeFace() :
 
 
 
-CubeFace::CubeFace(Vec3D tl , Vec3D bl , Vec3D br , Vec3D tr , bool wind_ccw) {
+CubeFace::CubeFace(Vec3D tl , Vec3D bl , Vec3D br , Vec3D tr , bool wind_ccw) :
+      corners(),
+      texcorners(),
+      texid((unsigned int)-1)
+{
    SetCorners(tl,bl,br,tr,wind_ccw);
 }
 

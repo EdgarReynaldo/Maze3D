@@ -87,6 +87,10 @@ public :
 
 class Maze {
 protected :
+   std::vector<Room> rooms;
+   std::vector<Face> faces;
+   std::vector<Vec3D> vertices;
+
    int nrooms_wide;/// x
    int nrooms_tall;/// y
    int nrooms_deep;/// z (horizontal z, not vertical)
@@ -100,13 +104,11 @@ protected :
    struct FaceInfo {
       int index;
       int size;
+      FaceInfo() : index(-1) , size(0) {}
    };
    
    FaceInfo face_info[NUM_FACE_TYPES];
    
-   std::vector<Room> rooms;
-   std::vector<Face> faces;
-   std::vector<Vec3D> vertices;
    
 ///   Cube unit_cube;
    
@@ -127,6 +129,9 @@ protected :
 
 public :
    Maze() :
+         rooms(),
+         faces(),
+         vertices(),
          nrooms_wide(0),
          nrooms_tall(0),
          nrooms_deep(0),
@@ -135,10 +140,7 @@ public :
          floor_area(0),
          side_area(0),
          front_area(0),
-         face_info(),
-         rooms(),
-         faces(),
-         vertices()
+         face_info()
    {}
    
    ~Maze();
