@@ -15,11 +15,11 @@ public :
    
    void SetXYZ(double xpos , double ypos , double zpos);
    
-   Vec3D& operator+(const Vec3D& v);
-   Vec3D& operator-(const Vec3D& v);
+   Vec3D operator+(const Vec3D& v);
+   Vec3D operator-(const Vec3D& v);
    Vec3D operator-() const;
-   Vec3D& operator*(double factor);
-   Vec3D& operator/(double quotient);
+   Vec3D operator*(double factor);
+   Vec3D operator/(double quotient);
 
    double Magnitude();
    Vec3D& Normalize();

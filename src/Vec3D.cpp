@@ -37,7 +37,7 @@ void Vec3D::SetXYZ(double xpos , double ypos , double zpos) {
 
 
 
-Vec3D& Vec3D::operator+(const Vec3D& v) {
+Vec3D Vec3D::operator+(const Vec3D& v) {
    x += v.x;
    y += v.y;
    z += v.z;
@@ -46,7 +46,7 @@ Vec3D& Vec3D::operator+(const Vec3D& v) {
 
 
 
-Vec3D& Vec3D::operator-(const Vec3D& v) {
+Vec3D Vec3D::operator-(const Vec3D& v) {
    return operator+(-v);
 }
 
@@ -58,7 +58,7 @@ Vec3D Vec3D::operator-() const {
 
 
 
-Vec3D& Vec3D::operator*(double factor) {
+Vec3D Vec3D::operator*(double factor) {
    x *= factor;
    y *= factor;
    z *= factor;
@@ -67,7 +67,7 @@ Vec3D& Vec3D::operator*(double factor) {
 
 
 
-Vec3D& Vec3D::operator/(double quotient) {
+Vec3D Vec3D::operator/(double quotient) {
    return operator*(1.0/quotient);
 }
 
@@ -80,7 +80,8 @@ double Vec3D::Magnitude() {
 
 
 Vec3D& Vec3D::Normalize() {
-   return operator/(Magnitude());
+   *this = *this/Magnitude();
+   return *this;
 }
 
    

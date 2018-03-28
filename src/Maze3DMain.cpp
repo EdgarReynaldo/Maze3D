@@ -21,23 +21,25 @@
 #include "Globals.hpp"
 
 
-int main(int argc , char** argv) {
+int testmain(int argc , char** argv) {
    
-///   if (!al_init()) {return -1;}
+   (void)argc;
+   (void)argv;
    
-   Maze m;
-
+   if (!al_init()) {return -1;}
+   
    int height = 10;
    int depth = 10;
    int width = 10;
    for (int y = 1 ; y < height ; ++y) {
       for (int z = 1 ; z < depth ; ++z) {
          for (int x = 1 ; x < width ; ++x) {
-///            double start = al_get_time();
+            Maze m;
+            double start = al_get_time();
             m.CreateMaze(x , y , z);
-///            double stop = al_get_time();
+            double stop = al_get_time();
             printf("Created %d x %d x %d maze.\n" , y , z , x);
-///            printf("Creating a maze of size %d X %d X %d (%d) took %3.5lf seconds\n" , y , x , z , x*y*z , stop - start);
+            printf("Creating a maze of size %d X %d X %d (%d) took %3.5lf seconds\n" , y , x , z , x*y*z , stop - start);
          }
       }
    }
@@ -49,16 +51,7 @@ int main(int argc , char** argv) {
 
 
 
-int main2(int argc , char** argv) {
-   
-   std::vector<Face> fvec;
-   fvec.clear();
-   fvec.resize(6);
-   
-   Maze mz;
-   
-   mz.CreateMaze(1,1,1);
-   
+int mazemain(int argc , char** argv) {
    
    (void)argc;
    (void)argv;
@@ -93,32 +86,6 @@ int main2(int argc , char** argv) {
    al_register_event_source(q , al_get_timer_event_source(t));
    al_register_event_source(q , al_get_keyboard_event_source());
    al_register_event_source(q , al_get_mouse_event_source());
-   
-   int height = 10;
-   int depth = 10;
-   int width = 10;
-   for (int y = 1 ; y < height ; ++y) {
-      for (int z = 1 ; z < depth ; ++z) {
-         for (int x = 1 ; x < width ; ++x) {
-            Maze m;
-            double start = al_get_time();
-            m.CreateMaze(x , y , z);
-            double stop = al_get_time();
-            printf("Creating a maze of size %d X %d X %d (%d) took %3.5lf seconds\n" , y , x , z , x*y*z , stop - start);
-            ALLEGRO_EVENT ev;
-            if (al_get_next_event(q , &ev) && ev.type == ALLEGRO_EVENT_KEY_DOWN && ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
-               y = height;
-               z = depth;
-               x = width;
-               break;
-            }
-         }
-      }
-   }
-   
-   return 0;
-   
-   
    
    /// For keeping track of which keys are held
    bool keys[ALLEGRO_KEY_MAX] = {0};
@@ -169,3 +136,11 @@ int main2(int argc , char** argv) {
 
 
   
+int main(int argc , char** argv) {
+///   return testmain(argc,argv);
+   return mazemain(argc,argv);
+}
+
+
+
+
