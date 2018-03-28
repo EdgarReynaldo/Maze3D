@@ -23,6 +23,34 @@
 
 int main(int argc , char** argv) {
    
+///   if (!al_init()) {return -1;}
+   
+   Maze m;
+
+   int height = 10;
+   int depth = 10;
+   int width = 10;
+   for (int y = 1 ; y < height ; ++y) {
+      for (int z = 1 ; z < depth ; ++z) {
+         for (int x = 1 ; x < width ; ++x) {
+///            double start = al_get_time();
+            m.CreateMaze(x , y , z);
+///            double stop = al_get_time();
+            printf("Created %d x %d x %d maze.\n" , y , z , x);
+///            printf("Creating a maze of size %d X %d X %d (%d) took %3.5lf seconds\n" , y , x , z , x*y*z , stop - start);
+         }
+      }
+   }
+
+   
+   return 0;
+}
+
+
+
+
+int main2(int argc , char** argv) {
+   
    std::vector<Face> fvec;
    fvec.clear();
    fvec.resize(6);
