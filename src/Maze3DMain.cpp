@@ -17,7 +17,7 @@
 
 
 
-#include "MazeRoom.hpp"
+#include "Maze.hpp"
 #include "Globals.hpp"
 
 
