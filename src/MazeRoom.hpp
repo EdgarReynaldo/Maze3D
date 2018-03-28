@@ -78,7 +78,7 @@ public :
    Room() :
          faces()
    {
-      memset(faces , 0 , sizeof(Face)*NUM_ROOM_FACES);
+      memset(faces , 0 , sizeof(Face*)*NUM_ROOM_FACES);
    }
 
 
