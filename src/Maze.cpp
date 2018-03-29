@@ -18,6 +18,9 @@ const int WEIGHT_EXITS = 0;/// Anything greater than zero will eventually be rem
     If you want to make hallways or shafts, increase the weight of one of these :
 */
 
+const int WEIGHT_ROOMS_NORMAL = 1;
+
+/** Not currently using these */
 const int WEIGHT_ROOMS_EW = 1;
 const int WEIGHT_ROOMS_NS = 1;
 const int WEIGHT_ROOMS_UD = 1;
@@ -31,12 +34,13 @@ const int WEIGHT_ROOMS_LATER = 4;
 
 
 
-void Maze::ResetFaces() {
+void Maze::ResetFaces(int weight) {
    const int stop = (int)faces.size();
    assert(stop);
    Face* pfacepalm = &faces[0];
    int i = 0;
    while (i++ < stop) {
+      pfacepalm->SetWeight(weight);
       pfacepalm++->Reset();
    }
 }
@@ -100,20 +104,31 @@ void Maze::AssignFaceWeigthsKeep() {
 
 
 
-void Maze::AssignExits() {
-   
+void Maze::AssignFaceWeightsExit() {
+   /// Find a random face on the front and back of the maze
+   Face* front = GetFace(rng.Rand0toNM1(nrooms_tall) , 0 , rng.Rand0toNM1(nrooms_wide), ROOM_SOUTH);
+   Face* back = GetFace(rng.Rand0toNM1(nrooms_tall) , nrooms_deep - 1 , rng.Rand0toNM1(nrooms_wide), ROOM_SOUTH);
+
+   front->SetWeight(WEIGHT_EXITS);
+   back->SetWeight(WEIGHT_EXITS);
+/** we need to do this in ProcessFaces
+   front->SetRoom(ROOM_NEGATIVE , 0);
+   back->SetRoom(ROOM_POSITIVE , 0);
+*/
 }
 
 
 
-void Maze::AssignFaces() {
-   
+void Maze::AssignFaceWeightsRegular() {
+   /// Need to set all the internal faces now, like UpDown, NorthSouth, and EastWest
+   /// There's got to be an easy way to get all of these faces
 }
 
 
 
-void Maze::AssignLaterFaces() {
-   
+void Maze::AssignFaceWeightsLater() {
+   /** This function is for assigning weights to edges you want to be less likely to be removed */
+   return;/// Do nothing for now
 }
 
 
@@ -377,7 +392,7 @@ void Maze::AssignFaceWeights() {
        are rooms and the connecting edge is a face (wall).
    */
 
-   ResetFaces();
+   ResetFaces(WEIGHT_ROOMS_NORMAL);
 
    /// Assign all the outside faces
    
@@ -385,17 +400,17 @@ void Maze::AssignFaceWeights() {
 
    /// Create exits
 
-   AssignExits();
+   AssignFaceWeightsExit();
       
    /// Assign NS faces
    /// Assign EW faces
    /// Assign UD (UpDown) faces
    
-   AssignFaces();
+   AssignFaceWeightsRegular();
    
    /// Assign later faces
    
-   AssignLaterFaces();
+   AssignFaceWeightsLater();
    
    /// Create a copy of the face list
    

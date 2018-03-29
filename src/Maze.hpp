@@ -15,6 +15,8 @@
 #include "Face.hpp"
 #include "Vec3D.hpp"
 #include "PathSet.hpp"
+#include "RNG.hpp"
+
 
 
 
@@ -43,11 +45,13 @@ protected :
 
    FaceInfo face_info[NUM_FACE_TYPES];
 
+   RNG rng;
+   
+   
+   
 ///   Cube unit_cube;
 
-///   Maze();
-
-   void ResetFaces();
+   void ResetFaces(int weight);
 
    void AssignAboveBelowFaceWeightsOutside();
    void AssignEastWestFaceWeightsOutside();
@@ -55,9 +59,9 @@ protected :
 
    void AssignFaceWeightsOutside();
    void AssignFaceWeigthsKeep();
-   void AssignExits();
-   void AssignFaces();
-   void AssignLaterFaces();
+   void AssignFaceWeightsExit();
+   void AssignFaceWeightsRegular();
+   void AssignFaceWeightsLater();
 
    Room* GetRoom(int index);
    int GetRoomIndex(int floor , int row , int col);
@@ -96,7 +100,8 @@ public :
          floor_area(0),
          side_area(0),
          front_area(0),
-         face_info()
+         face_info(),
+         rng()
    {}
 
    ~Maze();
@@ -104,6 +109,7 @@ public :
 
 
    void ClearMaze();
+   
    bool CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_deep);
 
    void AssignFaceWeights();

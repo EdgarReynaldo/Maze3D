@@ -46,6 +46,7 @@
 		<Linker>
 			<Add directory="E:/LIBS/LIBS72Distro/Allegro524/lib" />
 		</Linker>
+		<Unit filename="Ideas.txt" />
 		<Unit filename="src/Camera.cpp" />
 		<Unit filename="src/Camera.hpp" />
 		<Unit filename="src/Cube.cpp" />
@@ -57,10 +58,10 @@
 		<Unit filename="src/Maze.cpp" />
 		<Unit filename="src/Maze.hpp" />
 		<Unit filename="src/Maze3DMain.cpp" />
-		<Unit filename="src/MazeRoom.cpp" />
-		<Unit filename="src/MazeRoom.hpp" />
-		<Unit filename="src/Path.cpp" />
-		<Unit filename="src/Path.hpp" />
+		<Unit filename="src/PathSet.cpp" />
+		<Unit filename="src/Pathset.hpp" />
+		<Unit filename="src/RNG.cpp" />
+		<Unit filename="src/RNG.hpp" />
 		<Unit filename="src/Room.cpp" />
 		<Unit filename="src/Room.hpp" />
 		<Unit filename="src/Texture.cpp" />

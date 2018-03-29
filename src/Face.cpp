@@ -40,6 +40,7 @@ void Face::Reset() {
    memset(v , 0 , sizeof(Vec3D*)*NUM_FACE_CORNERS);
    texidpos = texidneg = (unsigned int)-1;
    kweight = 0;
+   open = false;
 }
 
 
