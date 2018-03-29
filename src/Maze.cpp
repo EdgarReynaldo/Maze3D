@@ -171,24 +171,44 @@ void Maze::AssignFaceWeights() {
 
 
 
-std::map<int , std::vector<Face*> > Maze::CreateWeightMap() {
-   std::map<int , std::vector<Face*> > wmap;/// TODO : TYPEDEF THIS SHIZNIT
-   std::map<int , std::vector<Face*> >::iterator it = wmap.end();
+Maze::WEIGHTMAP Maze::CreateWeightMap() {
+   WEIGHTMAP wmap;
+   WMIT it = wmap.end();
    Face* f = &faces[0];
    for (int i = 0 ; i < nfaces_total ; ++i) {
       it = wmap.find(f->Weight());
       if (it == wmap.end()) {
          /// Couldn't find this weight on the map, create a new empty vector and store it in the weight key
-         wmap.insert(std::pair<int , std::vector<Face*> >(f->Weight() , std::vector<Face*>()));
+         wmap.insert(WMPAIR(f->Weight() , std::vector<Face*>()));
       }
       else {
          /// Found this weight in the map, add it to the vector stored by the weight key
          it->second.push_back(f);
-         
       }
       ++f;
    }
    return wmap;
+}
+
+
+
+void Maze::RandomizeWeightMap(WEIGHTMAP& wmap) {
+   for (WMIT it = wmap.begin() ; it != wmap.end() ; ++it) {
+      RandomizeFaceVector(it->second);
+   }
+}
+
+
+
+void Maze::RandomizeFaceVector(FACEVEC& fvec) {
+   FACEVEC shuffle;
+   unsigned int size = fvec.size();
+   for (FACEVEC::iterator it = fvec.begin() ; it != fvec.end() ; ++it) {
+      Face* random_face = fvec[rng.Rand0toNM1(size)];
+      shuffle.push_back(random_face);
+      it = fvec.erase(it);
+   }
+   fvec = shuffle;
 }
 
 
@@ -441,7 +461,10 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
 void Maze::KruskalRemoval() {
    AssignFaceWeights();
    
-   std::map<int , std::vector<Face*> > face_weight_map = CreateWeightMap();
+   WEIGHTMAP wmap = CreateWeightMap();
+   
+   RandomizeWeightMap(wmap);
+   
 }
    
 

@@ -66,6 +66,18 @@ protected :
 
    void AssignFaceWeights();
 
+   typedef std::vector<Face*> FACEVEC;
+   typedef std::map<int , FACEVEC> WEIGHTMAP;
+   typedef WEIGHTMAP::iterator WMIT;
+   typedef std::pair<int , FACEVEC> WMPAIR;
+   
+   WEIGHTMAP CreateWeightMap();
+
+   void RandomizeWeightMap(WEIGHTMAP& wmap);
+
+   void RandomizeFaceVector(FACEVEC& fvec);
+
+
    Room* GetRoom(int index);
    int GetRoomIndex(int floor , int row , int col);
    Room* GetRoom(int floor , int row , int col) {
@@ -84,7 +96,6 @@ protected :
       return GetVertex(GetVertexIndex(floor,row,col,face,corner));
    }
 
-   std::map<int , std::vector<Face*> > CreateWeightMap();
 
 
 
