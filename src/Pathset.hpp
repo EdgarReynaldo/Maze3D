@@ -24,6 +24,8 @@ public :
    
    void Reset();
    
+   void Clear();
+   
    bool HasRoom(Room* r);
    bool AddRoom(Room* r);
 

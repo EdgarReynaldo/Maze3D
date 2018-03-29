@@ -8,6 +8,12 @@
 #include <cassert>
 
 void PathSet::Reset() {
+   Clear();
+}
+
+
+
+void PathSet::Clear() {
    rooms.clear();
 }
 
@@ -46,6 +52,9 @@ void PathSet::AbsorbPathSet(PathSet* pset_absorb) {
    pset_absorb->SetAllRoomsPathSet(this);/// Prevent invalidation of Room*s
    
    rooms.insert(pset_absorb->rooms.begin() , pset_absorb->rooms.end());/// Splice the two sets
+   
+   pset_absorb->Clear();
+   
 }
 
 

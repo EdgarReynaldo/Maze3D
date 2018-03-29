@@ -74,6 +74,7 @@ public :
    
    Room* GetRoom(ROOM_DIRECTION dir);
    
+   void SetOpen(bool face_open) {open = face_open;}
 };
 
 

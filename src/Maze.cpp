@@ -469,6 +469,7 @@ void Maze::KruskalRemoval() {
    RandomizeWeightMap(wmap);
    
    /// Put the map in a vector for processing now that it is sorted
+   /// The order has already been randomized, so they will be in final order already
    
    FACEVEC sorted;
    FACEVEC* fvec = 0;
@@ -482,16 +483,23 @@ void Maze::KruskalRemoval() {
    assert(sorted.size());
    
    /// Process each face in order
-   Face** f = &sorted[0];
 
    int start = 0;
    
    /// Skip all weights less than the minimum
-   while ((*f)++->Weight() < WEIGHT_MINIMUM) {++start;}
+   for ( ; start < (int)sorted.size() ; ++start) {
+      Face* f = sorted[start];
+      if (f->Weight() >= WEIGHT_MINIMUM) {
+         break;
+      }
+   }
    
-   for (int i = start ; i < (int)sorted.size() ; ++i , ++f) {
-      Room* rpos = f[i]->GetRoom(ROOM_POSITIVE);
-      Room* rneg = f[i]->GetRoom(ROOM_NEGATIVE);
+   /// For every other edge check if removal would create a cycle if so keep it and keep the cycle broken
+   /// This is what makes the spanning tree
+   for (int i = start ; i < (int)sorted.size() ; ++i) {
+      Face* f = sorted[i];
+      Room* rpos = f->GetRoom(ROOM_POSITIVE);
+      Room* rneg = f->GetRoom(ROOM_NEGATIVE);
       Room** r1 = rpos?&rpos:rneg?&rneg:0;/// Set r1 to the address of the first non-null Room*
       Room** r2 = (r1 == &rpos)?&rneg:&rpos;/// Set r2 to the other pointer
       assert(*r1);/// There should be at least one room connected to this face
@@ -504,9 +512,11 @@ void Maze::KruskalRemoval() {
          if (pset1 == pset2) {
                /** If both PathSet*s are the same, then these two rooms are already connected somehow, 
                    and removing the edge would create a cycle */
+               f->SetOpen(false);
                continue;
          }
          else {
+            f->SetOpen(true);
             pset1->AbsorbPathSet(pset2);
          }
 
