@@ -4,12 +4,66 @@
 
 #include "Maze.hpp"
 
-
 #include <cassert>
 
 
 
+/** These control how the maze will be generated */
+
+const int WEIGHT_OUTSIDE = -2;/// This weight is for the outside of the maze, which we never want to remove
+const int WEIGHT_KEEP = -1;/// We marked these faces as ones to keep in the maze
+const int WEIGHT_EXITS = 0;/// Anything greater than zero will eventually be removed
+
+/** For now, we want to keep xyz equal - this will make a super crazy 3D maze
+    If you want to make hallways or shafts, increase the weight of one of these :
+*/
+
+const int WEIGHT_ROOMS_EW = 1;
+const int WEIGHT_ROOMS_NS = 1;
+const int WEIGHT_ROOMS_UD = 1;
+
+/** */
+const int WEIGHT_ROOMS_LATER = 4;
+
+
+
 /// -----------------------      Maze     ----------------------------------------
+
+
+
+void Maze::ResetFaces() {
+   int stop = (int)faces.size();
+   assert(stop);
+   Face* pfacepalm = &faces[0];
+   int i = 0;
+   while (i++ < stop) {
+      pfacepalm++->Reset();
+   }
+}
+
+
+
+void Maze::AssignOutsideFaceWeights() {
+   
+}
+
+
+
+void Maze::AssignExits() {
+   
+}
+
+
+
+void Maze::AssignFaces() {
+   
+}
+
+
+
+void Maze::AssignLaterFaces() {
+   
+}
 
 
 
@@ -116,6 +170,13 @@ int Maze::GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_C
 
 
 
+std::map<int , std::vector<Face*> > Maze::CreateWeightMap() {
+   std::map<int , std::vector<Face*> > wmap;
+   return wmap;
+}
+
+
+
 Maze::~Maze() {
    ClearMaze();
 }
@@ -183,8 +244,8 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
    
    /// Reset the faces
    
-   for (int i = 0 ; i < face_count ; ++i) {
-      Face* f = faces[i];
+   Face* f = &faces[0];
+   for (int i = 0 ; i < face_count ; ++i ,++f) {
       f->Reset();
    }
 
@@ -253,6 +314,54 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
    
    return true;
 }
+
+
+
+void Maze::AssignFaceWeights() {
+
+   /** The basis of the Kruskal algorithm is to assign each edge in the graph (face in the maze)
+       a weight. Edges are removed in order from least weight to most, and edges with equal weights
+       are equally likely to be removed. An edge may only be removed if removing it does not create 
+       a cycle in the graph. This means we end up with a spanning tree where in this case, the nodes
+       are rooms and the connecting edge is a face (wall).
+   */
+
+   ResetFaces();
+
+   /// Assign all the outside faces
+   
+   AssignOutsideFaceWeights();
+
+   /// Create exits
+
+   AssignExits();
+      
+   /// Assign NS faces
+   /// Assign EW faces
+   /// Assign UD (UpDown) faces
+   
+   AssignFaces();
+   
+   /// Assign later faces
+   
+   AssignLaterFaces();
+   
+   /// Create a copy of the face list
+   
+   /// Process faces in order
+   
+   
+   
+}
+
+
+
+void Maze::KruskalRemoval() {
+   AssignFaceWeights();
+   
+   std::map<int , std::vector<Face*> > face_weight_map = CreateWeightMap();
+}
+   
 
 
 

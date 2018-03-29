@@ -2,8 +2,14 @@
 
 
 
-#include "Path.hpp"
+#include "PathSet.hpp"
 
+
+
+
+void PathSet::Reset() {
+   rooms.clear();
+}
 
 
 
@@ -11,8 +17,6 @@ bool PathSet::HasRoom(Room* r) {
    return rooms.find(r) != rooms.end();
 }
    
-}
-
 
 
 bool PathSet::AddRoom(Room* r) {
@@ -26,5 +30,5 @@ bool PathSet::AddRoom(Room* r) {
 
 
 void PathSet::AbsorbPathSet(PathSet* p) {
-   rooms.insert(p->begin() , p->end());
+   rooms.insert(p->rooms.begin() , p->rooms.end());
 }

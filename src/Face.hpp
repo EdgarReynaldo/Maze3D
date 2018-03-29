@@ -58,6 +58,8 @@ class Face {
 
    int kweight;
    
+   bool open;
+   
 public :
    Face();
    

@@ -7,10 +7,16 @@
 
 
 #include <vector>
+#include <map>
+
+
 
 #include "Room.hpp"
 #include "Face.hpp"
 #include "Vec3D.hpp"
+#include "PathSet.hpp"
+
+
 
 class Maze {
 protected :
@@ -41,6 +47,12 @@ protected :
 
 ///   Maze();
 
+   void ResetFaces();
+
+   void AssignOutsideFaceWeights();
+   void AssignExits();
+   void AssignFaces();
+   void AssignLaterFaces();
 
    Room* GetRoom(int index);
    int GetRoomIndex(int floor , int row , int col);
@@ -50,6 +62,8 @@ protected :
 
    Vec3D* GetVertex(int index);
    int GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner);
+
+   std::map<int , std::vector<Face*> > CreateWeightMap();
 
 
 
@@ -79,34 +93,8 @@ public :
    bool CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_deep);
 
    void AssignFaceWeights();
-   void AssignFaceWeights() {
-
-      /** The basis of the Kruskal algorithm is to assign each edge in the graph (face in the maze)
-          a weight. Edges are removed in order from least weight to most, and edges with equal weights
-          are equally likely to be removed. An edge may only be removed if removing it does not create 
-          a cycle in the graph. This means we end up with a spanning tree where in this case, the nodes
-          are rooms and the connecting edge is a face (wall).
-      */
-
-      const int WEIGHT_OUTSIDE = -1;
-      const int WEIGHT_EXITS = 0;
-      const int WEIGHT_ROOMS = 1;
-      const int WEIGHT_SHAFTS = 2;
-
-
-      /// Assign all the outside faces of the maze to -1
-      
-      /// Create two exits with weight 0
-      
-      /// Assign NS and EW faces a weight of 1
-      
-      /// Assign UPDOWN faces a weight of 2
-   }
-   
    void KruskalRemoval();
-   void KruskalRemoval() {
-      
-   }
+
    
 
 };

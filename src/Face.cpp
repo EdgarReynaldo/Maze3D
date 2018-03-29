@@ -27,7 +27,8 @@ Face::Face() :
       v(),
       texidpos((unsigned int)-1),
       texidneg((unsigned int)-1),
-      kweight(0)
+      kweight(0),
+      open(false)
 {
    Reset();
 }
