@@ -32,6 +32,7 @@ protected :
    int nrooms_deep;/// z (horizontal z, not vertical)
    int nrooms_total;
    int nverts_total;
+   int nfaces_total;
 
    int floor_area;/// width * depth
    int side_area;/// height * depth
@@ -62,6 +63,8 @@ protected :
    void AssignFaceWeightsExit();
    void AssignFaceWeightsRegular();
    void AssignFaceWeightsLater();
+
+   void AssignFaceWeights();
 
    Room* GetRoom(int index);
    int GetRoomIndex(int floor , int row , int col);
@@ -97,6 +100,7 @@ public :
          nrooms_deep(0),
          nrooms_total(0),
          nverts_total(0),
+         nfaces_total(0),
          floor_area(0),
          side_area(0),
          front_area(0),
@@ -112,7 +116,6 @@ public :
    
    bool CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_deep);
 
-   void AssignFaceWeights();
    void KruskalRemoval();
 
    

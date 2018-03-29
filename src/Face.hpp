@@ -70,6 +70,7 @@ public :
    void SetWeight(int w);
    
    bool Open() {return open;}
+   int Weight() {return kweight;}
 };
 
 
