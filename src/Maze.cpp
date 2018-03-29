@@ -126,9 +126,12 @@ void Maze::ClearMaze() {
    rooms.clear();
    faces.clear();
    vertices.clear();
+   path_sets.clear();
+   
    nrooms_wide = nrooms_tall = nrooms_deep = nrooms_total = 0;
    floor_area = side_area = front_area = 0;
    nverts_total = 0;
+   
    memset(face_info , 0 , sizeof(FaceInfo)*NUM_FACE_TYPES);
 }
 
@@ -148,14 +151,42 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
    side_area = nrooms_tall*nrooms_deep;
    front_area = nrooms_wide*nrooms_tall;
 
+   /// Reserve the rooms
+   
    rooms.resize(nrooms_total);
+   
+   
+   /// Reserve the path sets
+   
+   path_sets.resize(nrooms_total);
+   
+   /// Reset the rooms and path sets
+   
+   for (int i = 0 ; i < nrooms_total ; ++i) {
+      Room* r = &rooms[i];
+      r->Reset();
+
+      PathSet* p = &path_sets[i];
+      p->Reset();
+      
+      p->AddRoom(r);
+   }
+   
    /// Count number of faces
+
    int face_count = 3*nrooms_total;/// Each room has a west, south, and down face
    face_count += side_area;/// Add in the faces on the east
    face_count += front_area;/// Add in the faces on the north
    face_count += floor_area;/// Add in the faces on the ceiling
 
    faces.resize(face_count);
+   
+   /// Reset the faces
+   
+   for (int i = 0 ; i < face_count ; ++i) {
+      Face* f = faces[i];
+      f->Reset();
+   }
 
    /** Setup our face indices */
 
@@ -186,6 +217,7 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
    for (int y = 0 ; y < num_rooms_tall + 1 ; ++y) {
       for (int z = 0 ; z < num_rooms_deep + 1 ; ++z) {
          for (int x = 0 ; x < num_rooms_wide + 1 ; ++x) {
+            /// Luckily, each room is 1.0 X 1.0 X 1.0 and matches the depth,row,col index exactly
             vertices[index].SetXYZ(x,y,z);
             ++index;
          }
@@ -218,6 +250,7 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
          }
       }
    }
+   
    return true;
 }
 

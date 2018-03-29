@@ -59,6 +59,8 @@
 		<Unit filename="src/Maze3DMain.cpp" />
 		<Unit filename="src/MazeRoom.cpp" />
 		<Unit filename="src/MazeRoom.hpp" />
+		<Unit filename="src/Path.cpp" />
+		<Unit filename="src/Path.hpp" />
 		<Unit filename="src/Room.cpp" />
 		<Unit filename="src/Room.hpp" />
 		<Unit filename="src/Texture.cpp" />

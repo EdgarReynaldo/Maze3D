@@ -26,10 +26,19 @@ Face::Face() :
       rooms(),
       v(),
       texidpos((unsigned int)-1),
-      texidneg((unsigned int)-1)
+      texidneg((unsigned int)-1),
+      kweight(0)
 {
+   Reset();
+}
+
+
+
+void Face::Reset() {
    memset(rooms , 0 , sizeof(Room*)*ROOM_NUM_DIRECTIONS);
    memset(v , 0 , sizeof(Vec3D*)*NUM_FACE_CORNERS);
+   texidpos = texidneg = (unsigned int)-1;
+   kweight = 0;
 }
 
 

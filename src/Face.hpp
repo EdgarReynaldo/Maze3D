@@ -56,8 +56,12 @@ class Face {
    GLuint texidpos;/// Texture id for the POSITIVE direction
    GLuint texidneg;/// Texture id for the NEGATIVE direction
 
+   int kweight;
+   
 public :
    Face();
+   
+   void Reset();
 
    void SetRoom(ROOM_DIRECTION dir , Room* room);
    void SetVertex(FACE_CORNER corner , Vec3D* vtx);
