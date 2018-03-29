@@ -49,19 +49,33 @@ protected :
 
    void ResetFaces();
 
-   void AssignOutsideFaceWeights();
+   void AssignAboveBelowFaceWeightsOutside();
+   void AssignEastWestFaceWeightsOutside();
+   void AssignNorthSouthFaceWeightsOutside();
+
+   void AssignFaceWeightsOutside();
+   void AssignFaceWeigthsKeep();
    void AssignExits();
    void AssignFaces();
    void AssignLaterFaces();
 
    Room* GetRoom(int index);
    int GetRoomIndex(int floor , int row , int col);
-
+   Room* GetRoom(int floor , int row , int col) {
+      return GetRoom(GetRoomIndex(floor,row,col));
+   }
+   
    Face* GetFace(int index);
    int GetFaceIndex(int floor , int row , int col , ROOM_FACE face);
-
+   Face* GetFace(int floor , int row , int col , ROOM_FACE face) {
+      return GetFace(GetFaceIndex(floor,row,col,face));
+   }
+   
    Vec3D* GetVertex(int index);
    int GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner);
+   Vec3D* GetVertex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner) {
+      return GetVertex(GetVertexIndex(floor,row,col,face,corner));
+   }
 
    std::map<int , std::vector<Face*> > CreateWeightMap();
 

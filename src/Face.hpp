@@ -67,6 +67,7 @@ public :
 
    void SetRoom(ROOM_DIRECTION dir , Room* room);
    void SetVertex(FACE_CORNER corner , Vec3D* vtx);
+   void SetWeight(int w);
 };
 
 

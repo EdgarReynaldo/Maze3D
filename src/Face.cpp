@@ -55,3 +55,10 @@ void Face::SetVertex(FACE_CORNER corner , Vec3D* vtx) {
 }
 
 
+
+void Face::SetWeight(int w) {
+   kweight = w;
+}
+
+
+

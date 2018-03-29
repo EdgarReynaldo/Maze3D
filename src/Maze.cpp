@@ -32,7 +32,7 @@ const int WEIGHT_ROOMS_LATER = 4;
 
 
 void Maze::ResetFaces() {
-   int stop = (int)faces.size();
+   const int stop = (int)faces.size();
    assert(stop);
    Face* pfacepalm = &faces[0];
    int i = 0;
@@ -43,8 +43,59 @@ void Maze::ResetFaces() {
 
 
 
-void Maze::AssignOutsideFaceWeights() {
-   
+void Maze::AssignAboveBelowFaceWeightsOutside() {
+   /// Do the floor and ceiling of the maze
+   for (int z = 0 ; z < nrooms_deep ; ++z) {
+      for (int x = 0 ; x < nrooms_wide ; ++x) {
+         Face* floor = GetFace(0,z,x,ROOM_BELOW);
+         Face* ceiling = GetFace(nrooms_tall - 1,z,x,ROOM_ABOVE);
+         floor->SetWeight(WEIGHT_OUTSIDE);
+         ceiling->SetWeight(WEIGHT_OUTSIDE);
+      }
+   }
+}
+
+
+
+void Maze::AssignEastWestFaceWeightsOutside() {
+   /// Do the west and east outside of the maze
+   for (int y = 0 ; y < nrooms_tall ; ++y) {
+      for (int z = 0 ; z < nrooms_deep ; ++z) {
+         Face* west = GetFace(y,z,0,ROOM_WEST);
+         Face* east = GetFace(y,z,nrooms_wide - 1,ROOM_EAST);
+         west->SetWeight(WEIGHT_OUTSIDE);
+         east->SetWeight(WEIGHT_OUTSIDE);
+      }
+   }
+}
+
+
+
+void Maze::AssignNorthSouthFaceWeightsOutside() {
+   /// Do the north and south outside of the maze
+   for (int y = 0 ; y < nrooms_tall ; ++y) {
+      for (int x = 0 ; x < nrooms_wide ; ++x) {
+         Face* south = GetFace(y,0,x,ROOM_SOUTH);
+         Face* north = GetFace(y,nrooms_deep-1,x,ROOM_NORTH);
+         south->SetWeight(WEIGHT_OUTSIDE);
+         north->SetWeight(WEIGHT_OUTSIDE);
+      }
+   }
+}
+
+
+
+void Maze::AssignFaceWeightsOutside() {
+   AssignAboveBelowFaceWeightsOutside();
+   AssignEastWestFaceWeightsOutside();
+   AssignNorthSouthFaceWeightsOutside();
+}
+
+
+
+void Maze::AssignFaceWeigthsKeep() {
+   /** Here we can reserve edges we want to keep, in case we want to define a certain set of walls */
+   return; /// do nothing for now
 }
 
 
@@ -330,7 +381,7 @@ void Maze::AssignFaceWeights() {
 
    /// Assign all the outside faces
    
-   AssignOutsideFaceWeights();
+   AssignFaceWeightsOutside();
 
    /// Create exits
 
