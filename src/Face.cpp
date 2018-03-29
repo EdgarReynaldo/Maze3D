@@ -63,3 +63,6 @@ void Face::SetWeight(int w) {
 
 
 
+Room* Face::GetRoom(ROOM_DIRECTION dir) {
+   return rooms[dir];
+}

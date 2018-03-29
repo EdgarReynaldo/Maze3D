@@ -22,6 +22,8 @@ public :
 
    void SetFace(ROOM_FACE room_dir , Face* face);
    void SetPathSet(PathSet* ps);
+   
+   PathSet* GetPathSet() {return path_set;}
 };
 
 

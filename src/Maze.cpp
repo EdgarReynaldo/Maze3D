@@ -12,6 +12,9 @@
 
 const int WEIGHT_OUTSIDE = -2;/// This weight is for the outside of the maze, which we never want to remove
 const int WEIGHT_KEEP = -1;/// We marked these faces as ones to keep in the maze
+
+const int WEIGHT_MINIMUM = 0;/// Don't process anything below this value
+
 const int WEIGHT_EXITS = 0;/// Anything greater than zero will eventually be removed
 
 /** For now, we want to keep xyz weights equal - this will make a super crazy 3D maze
@@ -465,6 +468,54 @@ void Maze::KruskalRemoval() {
    
    RandomizeWeightMap(wmap);
    
+   /// Put the map in a vector for processing now that it is sorted
+   
+   FACEVEC sorted;
+   FACEVEC* fvec = 0;
+   
+   WMIT it = wmap.begin();
+   while (it != wmap.end()) {
+      fvec = &(it->second);
+      sorted.insert(sorted.end() , fvec->begin() , fvec->end());
+      ++it;
+   }
+   assert(sorted.size());
+   
+   /// Process each face in order
+   Face** f = &sorted[0];
+
+   int start = 0;
+   
+   /// Skip all weights less than the minimum
+   while ((*f)++->Weight() < WEIGHT_MINIMUM) {++start;}
+   
+   for (int i = start ; i < (int)sorted.size() ; ++i , ++f) {
+      Room* rpos = f[i]->GetRoom(ROOM_POSITIVE);
+      Room* rneg = f[i]->GetRoom(ROOM_NEGATIVE);
+      Room** r1 = rpos?&rpos:rneg?&rneg:0;/// Set r1 to the address of the first non-null Room*
+      Room** r2 = (r1 == &rpos)?&rneg:&rpos;/// Set r2 to the other pointer
+      assert(*r1);/// There should be at least one room connected to this face
+      if (*r2) {/// Both Room*s are non-null
+         PathSet* pset1 = (*r1)->GetPathSet();
+         PathSet* pset2 = (*r2)->GetPathSet();
+         
+         /// If removing the face creates a Room* cycle, then skip it and keep, else remove
+
+         if (pset1 == pset2) {
+               /** If both PathSet*s are the same, then these two rooms are already connected somehow, 
+                   and removing the edge would create a cycle */
+               continue;
+         }
+         else {
+            pset1->AbsorbPathSet(pset2);
+         }
+
+      }
+      else {
+         /// Outside edge, can't remove it
+         assert(0);/// These should all have been excluded
+      }
+   }
 }
    
 

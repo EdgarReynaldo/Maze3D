@@ -71,6 +71,9 @@ public :
    
    bool Open() {return open;}
    int Weight() {return kweight;}
+   
+   Room* GetRoom(ROOM_DIRECTION dir);
+   
 };
 
 

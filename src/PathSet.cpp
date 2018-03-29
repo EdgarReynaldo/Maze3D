@@ -3,9 +3,9 @@
 
 
 #include "PathSet.hpp"
+#include "Room.hpp"
 
-
-
+#include <cassert>
 
 void PathSet::Reset() {
    rooms.clear();
@@ -29,6 +29,25 @@ bool PathSet::AddRoom(Room* r) {
 
 
 
-void PathSet::AbsorbPathSet(PathSet* p) {
-   rooms.insert(p->rooms.begin() , p->rooms.end());
+void PathSet::SetAllRoomsPathSet(PathSet* pset) {
+   std::unordered_set<Room*>::iterator it = rooms.begin();
+   while (it != rooms.end()) {
+      Room* r = *it;
+      r->SetPathSet(pset);
+      ++it;
+   }
 }
+
+
+
+void PathSet::AbsorbPathSet(PathSet* pset_absorb) {
+   assert(pset_absorb);
+   
+   pset_absorb->SetAllRoomsPathSet(this);/// Prevent invalidation of Room*s
+   
+   rooms.insert(pset_absorb->rooms.begin() , pset_absorb->rooms.end());/// Splice the two sets
+}
+
+
+
+

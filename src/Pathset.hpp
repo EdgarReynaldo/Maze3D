@@ -27,7 +27,9 @@ public :
    bool HasRoom(Room* r);
    bool AddRoom(Room* r);
 
-   void AbsorbPathSet(PathSet* p);
+   void SetAllRoomsPathSet(PathSet* pset);
+   
+   void AbsorbPathSet(PathSet* pset_absorb);
 };
 
 
