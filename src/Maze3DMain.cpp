@@ -31,15 +31,18 @@ int testmain(int argc , char** argv) {
    int height = 10;
    int depth = 10;
    int width = 10;
-   for (int y = 1 ; y < height ; ++y) {
-      for (int z = 1 ; z < depth ; ++z) {
-         for (int x = 1 ; x < width ; ++x) {
+   for (int y = 2 ; y < height ; ++y) {
+      for (int z = 2 ; z < depth ; ++z) {
+         for (int x = 2 ; x < width ; ++x) {
             Maze m;
             double start = al_get_time();
             m.CreateMaze(x , y , z);
             double stop = al_get_time();
+            m.KruskalRemoval();
+            double stop2 = al_get_time();
             printf("Created %d x %d x %d maze.\n" , y , z , x);
             printf("Creating a maze of size %d X %d X %d (%d) took %3.5lf seconds\n" , y , x , z , x*y*z , stop - start);
+            printf("Kruskal Removal took %3.6lf seconds\n" , stop2 - stop);
          }
       }
    }
@@ -137,8 +140,8 @@ int mazemain(int argc , char** argv) {
 
   
 int main(int argc , char** argv) {
-///   return testmain(argc,argv);
-   return mazemain(argc,argv);
+   return testmain(argc,argv);
+///   return mazemain(argc,argv);
 }
 
 
