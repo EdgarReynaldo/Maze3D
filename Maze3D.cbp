@@ -7,7 +7,7 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="MazeDebug" prefix_auto="1" extension_auto="1" />
+				<Option output="MazeD" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -41,10 +41,10 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add directory="E:/LIBS/LIBS72Distro/Allegro524/include" />
+			<Add directory="../../include" />
 		</Compiler>
 		<Linker>
-			<Add directory="E:/LIBS/LIBS72Distro/Allegro524/lib" />
+			<Add directory="../../lib" />
 		</Linker>
 		<Unit filename="Ideas.txt" />
 		<Unit filename="src/Camera.cpp" />
@@ -59,7 +59,7 @@
 		<Unit filename="src/Maze.hpp" />
 		<Unit filename="src/Maze3DMain.cpp" />
 		<Unit filename="src/PathSet.cpp" />
-		<Unit filename="src/PathSet.hpp" />
+		<Unit filename="src/Pathset.hpp" />
 		<Unit filename="src/RNG.cpp" />
 		<Unit filename="src/RNG.hpp" />
 		<Unit filename="src/Room.cpp" />
@@ -68,10 +68,6 @@
 		<Unit filename="src/Texture.hpp" />
 		<Unit filename="src/Vec3D.cpp" />
 		<Unit filename="src/Vec3D.hpp" />
-		<Extensions>
-			<code_completion />
-			<envvars />
-			<debugger />
-		</Extensions>
+		<Extensions />
 	</Project>
 </CodeBlocks_project_file>

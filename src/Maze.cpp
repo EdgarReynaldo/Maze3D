@@ -4,8 +4,7 @@
 
 #include "Maze.hpp"
 
-#include <cassert>
-
+#include "Eagle/Exception.hpp"
 
 
 /** These control how the maze will be generated */
@@ -39,12 +38,11 @@ const int WEIGHT_ROOMS_LATER = 4;
 
 void Maze::ResetFaces(int weight) {
    const int stop = (int)faces.size();
-   assert(stop);
-   Face* pfacepalm = &faces[0];
    int i = 0;
-   while (i++ < stop) {
-      pfacepalm->SetWeight(weight);
-      pfacepalm++->Reset();
+   while (i < stop) {
+      faces[i].SetWeight(weight);
+      ++i;
+      
    }
 }
 
@@ -100,7 +98,7 @@ void Maze::AssignFaceWeightsOutside() {
 
 
 
-void Maze::AssignFaceWeigthsKeep() {
+void Maze::AssignFaceWeightsKeep() {
    /** Here we can reserve edges we want to keep, in case we want to define a certain set of walls */
    return; /// do nothing for now
 }
@@ -125,11 +123,11 @@ void Maze::AssignFaceWeightsExit() {
 void Maze::AssignFaceWeightsRegular() {
    /// Need to set all the internal faces now, like UpDown, NorthSouth, and EastWest
    /// There's got to be an easy way to get all of these faces
-   
-   /** Right now, this is handled in ResetFaces(weight) inside AssignFaceWeights - 
+
+   /** Right now, this is handled in ResetFaces(weight) inside AssignFaceWeights -
        this gives a default weight of WEIGHT_NORMAL. TODO : add code
    */
-   
+
 }
 
 
@@ -145,7 +143,7 @@ void Maze::AssignFaceWeights() {
 
    /** The basis of the Kruskal algorithm is to assign each edge in the graph (face in the maze)
        a weight. Edges are removed in order from least weight to most, and edges with equal weights
-       are equally likely to be removed. An edge may only be removed if removing it does not create 
+       are equally likely to be removed. An edge may only be removed if removing it does not create
        a cycle in the graph. This means we end up with a spanning tree where in this case, the nodes
        are rooms and the connecting edge is a face (wall).
    */
@@ -153,23 +151,23 @@ void Maze::AssignFaceWeights() {
    ResetFaces(WEIGHT_NORMAL);
 
    /// Assign all the outside faces
-   
+
    AssignFaceWeightsOutside();
 
    /// Create exits
 
    AssignFaceWeightsExit();
-      
+
    /// Assign NS faces
    /// Assign EW faces
    /// Assign UD (UpDown) faces
-   
+
    AssignFaceWeightsRegular();
-   
+
    /// Assign later faces
-   
+
    AssignFaceWeightsLater();
-   
+
 }
 
 
@@ -205,11 +203,14 @@ void Maze::RandomizeWeightMap(WEIGHTMAP& wmap) {
 
 void Maze::RandomizeFaceVector(FACEVEC& fvec) {
    FACEVEC shuffle;
-   unsigned int size = fvec.size();
-   for (FACEVEC::iterator it = fvec.begin() ; it != fvec.end() ; ++it) {
-      Face* random_face = fvec[rng.Rand0toNM1(size)];
+   while ( fvec.size() ) {
+      int rnd = rng.Rand0toNM1(fvec.size());
+      Face* random_face = fvec[rnd];
       shuffle.push_back(random_face);
-      it = fvec.erase(it);
+//      if (fvec.size()) {
+      fvec[rnd] = fvec.back();
+      fvec.pop_back();
+//      }
    }
    fvec = shuffle;
 }
@@ -296,25 +297,169 @@ Vec3D* Maze::GetVertex(int index) {
 }
 
 
+/**enum ROOM_FACE {
+   ROOM_ABOVE = 0,ceiling, reverse of floor,modify z and x, same y but higher
+   ROOM_BELOW = 1,floor,modify z and x, same y
+   ROOM_NORTH = 2,ahead, modify y and x, same z but farther forward
+   ROOM_SOUTH = 3,behind, modify y and x, same z
+   ROOM_EAST  = 4,right, modify y and z, same x but farther right
+   ROOM_WEST  = 5,left, modify y and z, same x
 
+   enum FACE_CORNER
+   FC_UPPERLEFT = 0,///
+   FC_LOWERLEFT = 1,///
+   FC_LOWERRIGHT = 2,
+   FC_UPPERRIGHT = 3,
+*/
 int Maze::GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner) {
-   ROOM_DIRECTION dir = GetRoomDirection(face);
-   if (dir == ROOM_POSITIVE) {
-      switch (face) {
-      case ROOM_ABOVE :
-         floor += 1;
+//   ROOM_DIRECTION dir = GetRoomDirection(face);
+
+   /// The room coordinates need to be offset
+   int x = 0;// east west
+   int y = 0;// up down
+   int z = 0;// towards screen / towards you
+   
+   switch (face) {
+   case ROOM_ABOVE :
+      /// Ceiling
+      switch (corner) {
+      case FC_UPPERLEFT :
+         (void)0;
          break;
-      case ROOM_NORTH :
-         row += 1;
+      case FC_LOWERLEFT :
+         z += 1;
          break;
-      case ROOM_EAST :
-         col += 1;
+      case FC_LOWERRIGHT :
+         x += 1;
+         z += 1;
          break;
-      default : assert(0);
-      };
+      case FC_UPPERRIGHT :
+         x += 1;
+         break;
+      default : (void)0;break;
+      }
+   
+      break;
+   case ROOM_BELOW :
+      /// Ground - up is to the north
+      switch (corner) {
+      case FC_UPPERLEFT :
+         z += 1;
+         break;
+      case FC_LOWERLEFT :
+         (void)0;
+         break;
+      case FC_LOWERRIGHT :
+         x += 1;
+         break;
+      case FC_UPPERRIGHT :
+         x += 1;
+         z += 1;
+         break;
+      default : (void)0;break;
+      }
+
+      break;
+   case ROOM_NORTH :
+      /// North wall, positive z
+      switch (corner) {
+      case FC_UPPERLEFT :
+         y += 1;
+         break;
+      case FC_LOWERLEFT :
+         (void)0;
+         break;
+      case FC_LOWERRIGHT :
+         x += 1;
+         break;
+      case FC_UPPERRIGHT :
+         x += 1;
+         y += 1;
+         break;
+      default : (void)0;break;
+      }
+
+      break;
+   case ROOM_SOUTH :
+      /// South wall 
+      switch (corner) {
+      case FC_UPPERLEFT :
+         y += 1;
+         break;
+      case FC_LOWERLEFT :
+         (void)0;
+         break;
+      case FC_LOWERRIGHT :
+         x += 1;
+         break;
+      case FC_UPPERRIGHT :
+         x += 1;
+         y += 1;
+         break;
+      default : (void)0;break;
+      }
+
+      break;
+   case ROOM_EAST :
+      /// East wall
+      switch (corner) {
+      case FC_UPPERLEFT :
+         // upper north east
+         x += 1;
+         y += 1;
+         z += 1;
+         break;
+      case FC_LOWERLEFT :
+         // lower north east
+         x += 1;
+         z += 1;
+         break;
+      case FC_LOWERRIGHT :
+         // lower south east
+         x += 1;
+         break;
+      case FC_UPPERRIGHT :
+         // upper south east
+         x += 1;
+         y += 1;
+         break;
+      default : (void)0;break;
+      }
+
+      break;
+   case ROOM_WEST :
+      switch (corner) {
+      case FC_UPPERLEFT :
+         // upper south west
+         y += 1;
+         break;
+      case FC_LOWERLEFT :
+         // lower south west
+         (void)0;
+         break;
+      case FC_LOWERRIGHT :
+         // lower north west
+         z += 1;
+         break;
+      case FC_UPPERRIGHT :
+         // upper north west
+         y += 1;
+         z += 1;
+         break;
+      default : (void)0;break;
+      }
+
+      break;
+   default :
+      assert(0);
+      break;
    }
-   int index = NUM_FACE_CORNERS*(floor*(nrooms_deep + 1)*(nrooms_wide + 1) + row*(nrooms_wide + 1) + col);
-   index += (int)corner;
+
+   floor += y;
+   row += z;
+   col += x;
+   
+   int index = floor*(nrooms_deep + 1)*(nrooms_wide + 1) + row*(nrooms_wide + 1) + col;
    return index;
 }
 
@@ -331,12 +476,12 @@ void Maze::ClearMaze() {
    faces.clear();
    vertices.clear();
    path_sets.clear();
-   
+
    nrooms_wide = nrooms_tall = nrooms_deep = nrooms_total = 0;
    floor_area = side_area = front_area = 0;
    nverts_total = 0;
    nfaces_total = 0;
-   
+
    memset(face_info , 0 , sizeof(FaceInfo)*NUM_FACE_TYPES);
 }
 
@@ -357,37 +502,37 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
    front_area = nrooms_wide*nrooms_tall;
 
    /// Reserve the rooms
-   
+
    rooms.resize(nrooms_total);
-   
-   
+
+
    /// Reserve the path sets
-   
+
    path_sets.resize(nrooms_total);
-   
+
    /// Reset the rooms and path sets
-   
+
    for (int i = 0 ; i < nrooms_total ; ++i) {
       Room* r = &rooms[i];
       r->Reset();
 
       PathSet* p = &path_sets[i];
       p->Reset();
-      
+
       p->AddRoom(r);
    }
-   
+
    /// Count number of faces
 
-   nfaces_total = 3*nrooms_total;/// Each room has a west, south, and down face
+   nfaces_total = 3*nrooms_total;/// Each room has a west, south, and down face (which is someone else's east, north, or up face except on the edge)
    nfaces_total += side_area;/// Add in the faces on the east
    nfaces_total += front_area;/// Add in the faces on the north
    nfaces_total += floor_area;/// Add in the faces on the ceiling
 
    faces.resize(nfaces_total);
-   
+
    /// Reset the faces
-   
+
    Face* f = &faces[0];
    for (int i = 0 ; i < nfaces_total ; ++i ,++f) {
       f->Reset();
@@ -413,7 +558,7 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
    assert(face_info[2].index + face_info[2].size == (int)faces.size());/// Make sure our indices and sizes are correct
 
    /// Setup our vertice array
-   nverts_total = NUM_FACE_CORNERS*(nrooms_tall + 1)*(nrooms_deep + 1)*(nrooms_wide + 1);
+   nverts_total = (nrooms_tall + 1)*(nrooms_deep + 1)*(nrooms_wide + 1);
 
    vertices.resize(nverts_total);
 
@@ -428,6 +573,7 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
          }
       }
    }
+   EAGLE_ASSERT(index == nverts_total);
 
    /// For each room, populate it's face pointers and the face's room pointers
    index = 0;
@@ -455,7 +601,7 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
          }
       }
    }
-   
+
    return true;
 }
 
@@ -463,17 +609,17 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
 
 void Maze::KruskalRemoval() {
    AssignFaceWeights();
-   
+
    WEIGHTMAP wmap = CreateWeightMap();
-   
+
    RandomizeWeightMap(wmap);
-   
+
    /// Put the map in a vector for processing now that it is sorted
    /// The order has already been randomized, so they will be in final order already
-   
+
    FACEVEC sorted;
    FACEVEC* fvec = 0;
-   
+
    WMIT it = wmap.begin();
    while (it != wmap.end()) {
       fvec = &(it->second);
@@ -481,11 +627,11 @@ void Maze::KruskalRemoval() {
       ++it;
    }
    assert(sorted.size());
-   
+
    /// Process each face in order
 
    int start = 0;
-   
+
    /// Skip all weights less than the minimum
    for ( ; start < (int)sorted.size() ; ++start) {
       Face* f = sorted[start];
@@ -493,7 +639,7 @@ void Maze::KruskalRemoval() {
          break;
       }
    }
-   
+
    /// For every other edge check if removal would create a cycle if so keep it and keep the cycle broken
    /// This is what makes the spanning tree
    for (int i = start ; i < (int)sorted.size() ; ++i) {
@@ -506,11 +652,11 @@ void Maze::KruskalRemoval() {
       if (*r2) {/// Both Room*s are non-null
          PathSet* pset1 = (*r1)->GetPathSet();
          PathSet* pset2 = (*r2)->GetPathSet();
-         
+
          /// If removing the face creates a Room* cycle, then skip it and keep, else remove
 
          if (pset1 == pset2) {
-               /** If both PathSet*s are the same, then these two rooms are already connected somehow, 
+               /** If both PathSet*s are the same, then these two rooms are already connected somehow,
                    and removing the edge would create a cycle */
                f->SetOpen(false);
                continue;
@@ -527,7 +673,7 @@ void Maze::KruskalRemoval() {
       }
    }
 }
-   
+
 
 
 

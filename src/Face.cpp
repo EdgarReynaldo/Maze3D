@@ -41,6 +41,7 @@ void Face::Reset() {
    texidpos = texidneg = (unsigned int)-1;
    kweight = 0;
    open = false;
+   ftype = NUM_FACE_TYPES;
 }
 
 

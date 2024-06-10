@@ -59,7 +59,7 @@ protected :
    void AssignNorthSouthFaceWeightsOutside();
 
    void AssignFaceWeightsOutside();
-   void AssignFaceWeigthsKeep();
+   void AssignFaceWeightsKeep();
    void AssignFaceWeightsExit();
    void AssignFaceWeightsRegular();
    void AssignFaceWeightsLater();
