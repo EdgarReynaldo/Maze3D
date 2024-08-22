@@ -18,15 +18,17 @@
 #include "RNG.hpp"
 
 
-
+#include "GL/gl.h"
 
 class Maze {
 protected :
    std::vector<Room> rooms;
    std::vector<Face> faces;
-   std::vector<Vec3D> vertices;
+   std::vector<Vec3> vertices;
    std::vector<PathSet> path_sets;
 
+   GLuint TextureIDs[6];/// UDNSEW, corresponds to face directions
+   
    int nrooms_wide;/// x
    int nrooms_tall;/// y
    int nrooms_deep;/// z (horizontal z, not vertical)
@@ -90,9 +92,9 @@ protected :
       return GetFace(GetFaceIndex(floor,row,col,face));
    }
    
-   Vec3D* GetVertex(int index);
+   Vec3* GetVertex(int index);
    int GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner);
-   Vec3D* GetVertex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner) {
+   Vec3* GetVertex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner) {
       return GetVertex(GetVertexIndex(floor,row,col,face,corner));
    }
 
@@ -106,6 +108,7 @@ public :
          faces(),
          vertices(),
          path_sets(),
+         TextureIDs(),
          nrooms_wide(0),
          nrooms_tall(0),
          nrooms_deep(0),
@@ -129,8 +132,8 @@ public :
 
    void KruskalRemoval();
 
-   
-
+   void SetFaceTexture(ROOM_FACE face , GLuint texid);
+   void Display();
 };
 
 

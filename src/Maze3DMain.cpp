@@ -6,9 +6,15 @@
 
 #include "Eagle/backends/Allegro5Backend.hpp"
 #include "Eagle.hpp"
+#include "Eagle/BinFileStream2.hpp"
+
 
 #include "Maze.hpp"
 #include "Globals.hpp"
+#include "Camera.hpp"
+
+#include "allegro5/allegro_opengl.h"
+#include "GL/gl.h"
 
 
 int main(int argc , char** argv) {
@@ -38,10 +44,10 @@ int main(int argc , char** argv) {
    for (unsigned int i = 0 ; i < 6 ; ++i) {
       std::string s;
       s.push_back(dirs[i]);
-      win->SetDrawingTarget(faces[i])
+      win->SetDrawingTarget(faces[i]);
       win->Clear();
       win->DrawTextString(win->DefaultFont() , s , 128.0f , 128.0f , EagleColor(255,255,255) , HALIGN_CENTER , VALIGN_CENTER);
-      texids[i] = al_get_opengl_texture(GetAllegroBitmap(faces[i]);
+      texids[i] = al_get_opengl_texture(GetAllegroBitmap(faces[i]));
    }
    
    
@@ -69,10 +75,45 @@ int main(int argc , char** argv) {
    Maze m;
    m.CreateMaze(width , height , depth);
    m.KruskalRemoval();
+   m.SetFaceTexture(ROOM_ABOVE , texids[ROOM_ABOVE]);
+   m.SetFaceTexture(ROOM_BELOW , texids[ROOM_BELOW]);
+   m.SetFaceTexture(ROOM_NORTH , texids[ROOM_NORTH]);
+   m.SetFaceTexture(ROOM_SOUTH , texids[ROOM_SOUTH]);
+   m.SetFaceTexture(ROOM_EAST , texids[ROOM_EAST]);
+   m.SetFaceTexture(ROOM_WEST , texids[ROOM_WEST]);
    
-   Camera cam;
-   cam.SetupView();
+   Allegro5SpaceCamera cam;
+   cam.Setup3D(false);
    
+   m.Display();
+   win->FlipDisplay();
+   
+   bool quit = false;
+   bool redraw = true;
+   
+   sys->GetSystemTimer()->Start();
+   
+   do {
+      if (redraw) {
+         win->Clear();
+         m.Display();
+         win->FlipDisplay();
+         redraw = false;
+      }
+      do {
+         EagleEvent ev = sys->WaitForSystemEventAndUpdateState();
+         if (ev.type == EAGLE_EVENT_TIMER) {
+            redraw = true;
+         }
+         if ((ev.type == EAGLE_EVENT_KEY_DOWN && ev.keyboard.keycode == EAGLE_KEY_ESCAPE) || (ev.type == EAGLE_EVENT_DISPLAY_CLOSE)) {
+            quit = true;
+         }
+         
+      } while (!sys->UpToDate());
+      
+   } while (!quit);
+
+
    return 0;
 }
 

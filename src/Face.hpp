@@ -5,9 +5,10 @@
 #ifndef Face_HPP
 #define Face_HPP
 
+#include "Eagle.hpp"
+#include "Eagle/GraphicsContext.hpp"
 
 #include "GL/gl.h"
-
 
 
 enum ROOM_FACE {
@@ -51,7 +52,7 @@ class Room;
 
 class Face {
    Room* rooms[ROOM_NUM_DIRECTIONS];
-   Vec3D* v[NUM_FACE_CORNERS];
+   Vec3* v[NUM_FACE_CORNERS];
 
    GLuint texidpos;/// Texture id for the POSITIVE direction
    GLuint texidneg;/// Texture id for the NEGATIVE direction
@@ -66,7 +67,7 @@ public :
    void Reset();
 
    void SetRoom(ROOM_DIRECTION dir , Room* room);
-   void SetVertex(FACE_CORNER corner , Vec3D* vtx);
+   void SetVertex(FACE_CORNER corner , Vec3* vtx);
    void SetWeight(int w);
    
    bool Open() {return open;}
@@ -74,6 +75,7 @@ public :
    
    Room* GetRoom(ROOM_DIRECTION dir);
    
+   void Display(GLuint tex);
    void SetOpen(bool face_open) {open = face_open;}
 };
 

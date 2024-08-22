@@ -292,7 +292,7 @@ int Maze::GetFaceIndex(int floor , int row , int col , ROOM_FACE face) {
 
 
 
-Vec3D* Maze::GetVertex(int index) {
+Vec3* Maze::GetVertex(int index) {
    return &(vertices[index]);
 }
 
@@ -592,7 +592,7 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
                ROOM_DIRECTION dir = (GetRoomDirection((ROOM_FACE)i) == ROOM_POSITIVE)?ROOM_NEGATIVE:ROOM_POSITIVE;
                f->SetRoom(dir , r);
                for (int j = 0 ; j < NUM_FACE_CORNERS ; ++j) {
-                  Vec3D* vtx = GetVertex(GetVertexIndex(y,z,x , (ROOM_FACE)i , (FACE_CORNER)j));
+                  Vec3* vtx = GetVertex(GetVertexIndex(y,z,x , (ROOM_FACE)i , (FACE_CORNER)j));
                   f->SetVertex((FACE_CORNER)j , vtx);
                }
             }
@@ -674,6 +674,29 @@ void Maze::KruskalRemoval() {
    }
 }
 
+
+
+void Maze::SetFaceTexture(ROOM_FACE face , GLuint texid) {
+   TextureIDs[face] = texid;
+}
+
+
+
+void Maze::Display() {
+   for (int y = 0 ; y < nrooms_tall ; ++y) {
+      for (int z = 0 ; z < nrooms_deep ; ++z) {
+         for (int x = 0 ; x < nrooms_wide ; ++x) {
+            for (unsigned int dir = ROOM_ABOVE ; dir < NUM_ROOM_FACES ; ++dir) {
+               Face* f = GetFace(y,z,x,(ROOM_FACE)dir);
+               EAGLE_ASSERT(f);
+               if (!(f->Open())) {
+                  f->Display(TextureIDs[dir]);
+               }
+            }
+         }
+      }
+   }
+}
 
 
 

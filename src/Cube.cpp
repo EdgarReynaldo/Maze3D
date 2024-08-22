@@ -3,8 +3,10 @@
 
 
 #include "Cube.hpp"
+#include "Eagle/Vec3.hpp"
+#include "Eagle/Image.hpp"
 
-
+#include "GL/gl.h"
 
 /// ------------------------     CubeEdge     -----------------------------
 
@@ -17,7 +19,7 @@ CubeEdge::CubeEdge() :
 
 
 
-CubeEdge::CubeEdge(Vec3D a , Vec3D b) :
+CubeEdge::CubeEdge(Vec3 a , Vec3 b) :
       p1(a),
       p2(b)
 {}
@@ -43,23 +45,21 @@ void CubeEdge::Render() {
 
 CubeFace::CubeFace() :
       corners(),
-      texcorners(),
-      texid((unsigned int)-1)
+      texcorners()
 {}
 
 
 
-CubeFace::CubeFace(Vec3D tl , Vec3D bl , Vec3D br , Vec3D tr , bool wind_ccw) :
+CubeFace::CubeFace(Vec3 tl , Vec3 bl , Vec3 br , Vec3 tr , bool wind_ccw) :
       corners(),
-      texcorners(),
-      texid((unsigned int)-1)
+      texcorners()
 {
    SetCorners(tl,bl,br,tr,wind_ccw);
 }
 
 
 
-void CubeFace::SetCorners(Vec3D tl , Vec3D bl , Vec3D br , Vec3D tr , bool wind_ccw) {
+void CubeFace::SetCorners(Vec3 tl , Vec3 bl , Vec3 br , Vec3 tr , bool wind_ccw) {
    if (wind_ccw) {
       /// All coordinates have CCW winding
       corners[CTL] = tl;
@@ -68,10 +68,10 @@ void CubeFace::SetCorners(Vec3D tl , Vec3D bl , Vec3D br , Vec3D tr , bool wind_
       corners[CTR] = tr;
       /// OpenGL texture coordinates, origin at bottom left, x goes + to the right and y goes + to the up
       /// These are upside down with regards to allegro
-      texcorners[CTL] = {0.0 , 1.0};
-      texcorners[CBL] = {0.0 , 0.0};
-      texcorners[CBR] = {1.0 , 0.0};
-      texcorners[CTR] = {1.0 , 1.0};
+      texcorners[CTL] = TextureVertex(TexID() , Vec2(0.0 , 1.0));
+      texcorners[CBL] = TextureVertex(TexID() , Vec2(0.0 , 0.0));
+      texcorners[CBR] = TextureVertex(TexID() , Vec2(1.0 , 0.0));
+      texcorners[CTR] = TextureVertex(TexID() , Vec2(1.0 , 1.0));
    }
    else {
       /// All coordinates have CW winding, simply reverse order
@@ -81,10 +81,10 @@ void CubeFace::SetCorners(Vec3D tl , Vec3D bl , Vec3D br , Vec3D tr , bool wind_
       corners[CTR] = tl;
       /// OpenGL texture coordinates, origin at bottom left, x goes + to the right and y goes + to the up
       /// Flip them left to right so they appear inside out
-      texcorners[CTL] = {1.0 , 1.0};
-      texcorners[CBL] = {1.0 , 0.0};
-      texcorners[CBR] = {0.0 , 0.0};
-      texcorners[CTR] = {0.0 , 1.0};
+      texcorners[CTL] = TextureVertex(TexID() , Vec2(1.0 , 1.0));
+      texcorners[CBL] = TextureVertex(TexID() , Vec2(1.0 , 0.0));
+      texcorners[CBR] = TextureVertex(TexID() , Vec2(0.0 , 0.0));
+      texcorners[CTR] = TextureVertex(TexID() , Vec2(0.0 , 1.0));
    }
 }
 
@@ -92,7 +92,7 @@ void CubeFace::SetCorners(Vec3D tl , Vec3D bl , Vec3D br , Vec3D tr , bool wind_
 /**
 void CubeFace::Render() {
    Tex2D* tc = &(texcorners[0]);
-   Vec3D* c = &(corners[0]);
+   Vec3* c = &(corners[0]);
 
    if (textures_on) {
       glBindTexture(GL_TEXTURE_2D , texid);
@@ -158,20 +158,20 @@ void Cube::SetSize(double size) {
    /// Populate the faces of the cube with the vertices
    
    /// Note this produces the OUTside of a cube
-   cube_faces_out[FRONT]  = CubeFace(cube_verts[LTF] , cube_verts[LBF] , cube_verts[RBF] , cube_verts[RTF] , true);
-   cube_faces_out[BACK]   = CubeFace(cube_verts[RTR] , cube_verts[RBR] , cube_verts[LBR] , cube_verts[LTR] , true);
-   cube_faces_out[LEFT]   = CubeFace(cube_verts[LTR] , cube_verts[LBR] , cube_verts[LBF] , cube_verts[LTF] , true);
-   cube_faces_out[RIGHT]  = CubeFace(cube_verts[RTF] , cube_verts[RBF] , cube_verts[RBR] , cube_verts[RTR] , true);
-   cube_faces_out[TOP]    = CubeFace(cube_verts[LTR] , cube_verts[LTF] , cube_verts[RTF] , cube_verts[RTR] , true);
-   cube_faces_out[BOTTOM] = CubeFace(cube_verts[LBF] , cube_verts[LBR] , cube_verts[RBR] , cube_verts[RBF] , true);
+   cube_faces_out[CUBEFRONT]  = CubeFace(cube_verts[LTF] , cube_verts[LBF] , cube_verts[RBF] , cube_verts[RTF] , true);
+   cube_faces_out[CUBEBACK]   = CubeFace(cube_verts[RTR] , cube_verts[RBR] , cube_verts[LBR] , cube_verts[LTR] , true);
+   cube_faces_out[CUBELEFT]   = CubeFace(cube_verts[LTR] , cube_verts[LBR] , cube_verts[LBF] , cube_verts[LTF] , true);
+   cube_faces_out[CUBERIGHT]  = CubeFace(cube_verts[RTF] , cube_verts[RBF] , cube_verts[RBR] , cube_verts[RTR] , true);
+   cube_faces_out[CUBETOP]    = CubeFace(cube_verts[LTR] , cube_verts[LTF] , cube_verts[RTF] , cube_verts[RTR] , true);
+   cube_faces_out[CUBEBOTTOM] = CubeFace(cube_verts[LBF] , cube_verts[LBR] , cube_verts[RBR] , cube_verts[RBF] , true);
    
    /// These are the exact same vertices, wound backwards (the INside of the cube)
-   cube_faces_in[FRONT]  = CubeFace(cube_verts[LTF] , cube_verts[LBF] , cube_verts[RBF] , cube_verts[RTF] , false);
-   cube_faces_in[BACK]   = CubeFace(cube_verts[RTR] , cube_verts[RBR] , cube_verts[LBR] , cube_verts[LTR] , false);
-   cube_faces_in[LEFT]   = CubeFace(cube_verts[LTR] , cube_verts[LBR] , cube_verts[LBF] , cube_verts[LTF] , false);
-   cube_faces_in[RIGHT]  = CubeFace(cube_verts[RTF] , cube_verts[RBF] , cube_verts[RBR] , cube_verts[RTR] , false);
-   cube_faces_in[TOP]    = CubeFace(cube_verts[LTR] , cube_verts[LTF] , cube_verts[RTF] , cube_verts[RTR] , false);
-   cube_faces_in[BOTTOM] = CubeFace(cube_verts[LBF] , cube_verts[LBR] , cube_verts[RBR] , cube_verts[RBF] , false);
+   cube_faces_in[CUBEFRONT]  = CubeFace(cube_verts[LTF] , cube_verts[LBF] , cube_verts[RBF] , cube_verts[RTF] , false);
+   cube_faces_in[CUBEBACK]   = CubeFace(cube_verts[RTR] , cube_verts[RBR] , cube_verts[LBR] , cube_verts[LTR] , false);
+   cube_faces_in[CUBELEFT]   = CubeFace(cube_verts[LTR] , cube_verts[LBR] , cube_verts[LBF] , cube_verts[LTF] , false);
+   cube_faces_in[CUBERIGHT]  = CubeFace(cube_verts[RTF] , cube_verts[RBF] , cube_verts[RBR] , cube_verts[RTR] , false);
+   cube_faces_in[CUBETOP]    = CubeFace(cube_verts[LTR] , cube_verts[LTF] , cube_verts[RTF] , cube_verts[RTR] , false);
+   cube_faces_in[CUBEBOTTOM] = CubeFace(cube_verts[LBF] , cube_verts[LBR] , cube_verts[RBR] , cube_verts[RBF] , false);
 
    /// Populate the cube edges with vertices
    
@@ -196,9 +196,15 @@ void Cube::SetSize(double size) {
 
 
 
-void Cube::SetTexture(CUBEFACE cf , GLuint id) {
-   cube_faces_out[cf].texid = id;
-   cube_faces_in[cf].texid = id;
+void Cube::SetTexture(CUBEFACE cf , EagleImage* img) {
+   cube_faces_out[cf].texcorners[CTL].tid.pimg = img;
+   cube_faces_out[cf].texcorners[CTR].tid.pimg = img;
+   cube_faces_out[cf].texcorners[CBL].tid.pimg = img;
+   cube_faces_out[cf].texcorners[CBR].tid.pimg = img;
+   cube_faces_in[cf].texcorners[CTL].tid.pimg = img;
+   cube_faces_in[cf].texcorners[CTR].tid.pimg = img;
+   cube_faces_in[cf].texcorners[CBR].tid.pimg = img;
+   cube_faces_in[cf].texcorners[CBL].tid.pimg = img;
 }
 
 

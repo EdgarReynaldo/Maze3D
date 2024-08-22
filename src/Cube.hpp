@@ -8,19 +8,21 @@
 
 
 
-#include "Vec3D.hpp"
-#include "Texture.hpp"
+#include "Eagle/Vec3.hpp"
+#include "Eagle/Texture.hpp"
 
-#include "GL/gl.h"
+
+class EagleImage;
+
 
 
 enum CUBEFACE {
-   FRONT = 0,
-   RIGHT = 1,
-   BACK = 2,
-   LEFT = 3,
-   TOP = 4,
-   BOTTOM = 5,
+   CUBEFRONT = 0,
+   CUBERIGHT = 1,
+   CUBEBACK = 2,
+   CUBELEFT = 3,
+   CUBETOP = 4,
+   CUBEBOTTOM = 5,
    NUM_CUBE_FACES = 6
 };
 
@@ -48,10 +50,10 @@ enum CUBECORNER {
 
 class CubeEdge {
 public :
-   Vec3D p1,p2;
+   Vec3 p1,p2;
    
    CubeEdge();
-   CubeEdge(Vec3D a , Vec3D b);
+   CubeEdge(Vec3 a , Vec3 b);
    void Render();
 
 };
@@ -62,14 +64,13 @@ public :
 
 class CubeFace {
 public :
-   Vec3D corners[NUM_CUBE_CORNERS];
-   Tex2D texcorners[NUM_CUBE_CORNERS];
-   GLuint texid;
-   
+   Vec3 corners[NUM_CUBE_CORNERS];
+   TEXTEX texcorners[NUM_CUBE_CORNERS];
+
    CubeFace();
-   CubeFace(Vec3D tl , Vec3D bl , Vec3D br , Vec3D tr , bool wind_ccw);
+   CubeFace(Vec3 tl , Vec3 bl , Vec3 br , Vec3 tr , bool wind_ccw);
    
-   void SetCorners(Vec3D tl , Vec3D bl , Vec3D br , Vec3D tr , bool wind_ccw);
+   void SetCorners(Vec3 tl , Vec3 bl , Vec3 br , Vec3 tr , bool wind_ccw);
    
 ///   void Render();
 };
@@ -78,7 +79,7 @@ public :
 
 class Cube {
 public :
-   Vec3D    cube_verts    [NUM_CUBE_VERTS];
+   Vec3    cube_verts    [NUM_CUBE_VERTS];
    CubeFace cube_faces_out[NUM_CUBE_FACES];
    CubeFace cube_faces_in [NUM_CUBE_FACES];
    CubeEdge cube_edges    [NUM_CUBE_EDGES];
@@ -93,7 +94,7 @@ public :
    
    void SetSize(double size);
    
-   void SetTexture(CUBEFACE cf , GLuint id);
+   void SetTexture(CUBEFACE cf , EagleImage* img);
 ///   void Render();
 
 };
