@@ -7,7 +7,8 @@
 		<Option compiler="gcc" />
 		<Build>
 			<Target title="Debug">
-				<Option output="MazeD" prefix_auto="1" extension_auto="1" />
+				<Option output="c:/usr64/bin/MazeD" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="c:/usr64/bin/" />
 				<Option object_output="obj/Debug/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -18,13 +19,16 @@
 					<Add option="-g" />
 				</Compiler>
 				<Linker>
+					<Add option="-lEagleDebugShared.dll" />
+					<Add option="-lEagleA5DebugShared.dll" />
 					<Add option="-lallegro_monolith-debug.dll" />
 					<Add option="-lopengl32" />
 					<Add option="-lglu32" />
 				</Linker>
 			</Target>
 			<Target title="Release">
-				<Option output="Maze" prefix_auto="1" extension_auto="1" />
+				<Option output="c:/usr64/bin/Maze" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="c:/usr64/bin/" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -33,6 +37,8 @@
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="-lEagleShared.dll" />
+					<Add option="-lEagleA5Shared.dll" />
 					<Add option="-lallegro_monolith.dll" />
 					<Add option="-lopengl32" />
 					<Add option="-lglu32" />
@@ -41,14 +47,13 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add directory="../../include" />
+			<Add directory="C:/usr64/projects/Maze3D/src" />
+			<Add directory="c:/usr64/include" />
 		</Compiler>
 		<Linker>
-			<Add directory="../../lib" />
+			<Add directory="c:/usr64/lib" />
 		</Linker>
 		<Unit filename="Ideas.txt" />
-		<Unit filename="src/Camera.cpp" />
-		<Unit filename="src/Camera.hpp" />
 		<Unit filename="src/Cube.cpp" />
 		<Unit filename="src/Cube.hpp" />
 		<Unit filename="src/Face.cpp" />
@@ -64,10 +69,6 @@
 		<Unit filename="src/RNG.hpp" />
 		<Unit filename="src/Room.cpp" />
 		<Unit filename="src/Room.hpp" />
-		<Unit filename="src/Texture.cpp" />
-		<Unit filename="src/Texture.hpp" />
-		<Unit filename="src/Vec3D.cpp" />
-		<Unit filename="src/Vec3D.hpp" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
