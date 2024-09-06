@@ -10,8 +10,6 @@
 
 
 #include "Maze.hpp"
-#include "Globals.hpp"
-#include "Camera.hpp"
 
 #include "allegro5/allegro_opengl.h"
 #include "GL/gl.h"
@@ -83,7 +81,6 @@ int main(int argc , char** argv) {
    m.SetFaceTexture(ROOM_WEST , texids[ROOM_WEST]);
    
    Allegro5SpaceCamera cam;
-   cam.Setup3D(false);
    
    m.Display();
    win->FlipDisplay();
@@ -96,6 +93,7 @@ int main(int argc , char** argv) {
    do {
       if (redraw) {
          win->Clear();
+         cam.Setup3D(false);
          m.Display();
          win->FlipDisplay();
          redraw = false;
@@ -107,6 +105,44 @@ int main(int argc , char** argv) {
          }
          if ((ev.type == EAGLE_EVENT_KEY_DOWN && ev.keyboard.keycode == EAGLE_KEY_ESCAPE) || (ev.type == EAGLE_EVENT_DISPLAY_CLOSE)) {
             quit = true;
+         }
+         if (ev.type == EAGLE_EVENT_TIMER) {
+            if (input_key_held(EAGLE_KEY_LEFT)) {
+               cam.StrafeRight(-0.1);
+            }
+            if (input_key_held(EAGLE_KEY_RIGHT)) {
+               cam.StrafeRight(0.1);
+            }
+            if (input_key_held(EAGLE_KEY_UP)) {
+               cam.ElevateUp(0.1);
+            }
+            if (input_key_held(EAGLE_KEY_DOWN)) {
+               cam.ElevateUp(-0.1);
+            }
+            if (input_key_held(EAGLE_KEY_PAD_5)) {
+               cam.AdvanceForward(0.1);
+            }
+            if (input_key_held(EAGLE_KEY_PAD_0)) {
+               cam.AdvanceForward(-0.1);
+            }
+            if (input_key_held(EAGLE_KEY_PAD_2)) {
+               cam.PitchUp(-M_PI/180.0);// 1 degree per update
+            }
+            if (input_key_held(EAGLE_KEY_PAD_8)) {
+               cam.PitchUp(M_PI/180.0);
+            }
+            if (input_key_held(EAGLE_KEY_PAD_6)) {
+               cam.YawRight(-M_PI/180.0);
+            }
+            if (input_key_held(EAGLE_KEY_PAD_4)) {
+               cam.YawRight(M_PI/180.0);
+            }
+            if (input_key_held(EAGLE_KEY_PAD_9)) {
+               cam.SpinCCW(M_PI/180.0);
+            }
+            if (input_key_held(EAGLE_KEY_PAD_7)) {
+               cam.SpinCCW(-M_PI/180.0);
+            }
          }
          
       } while (!sys->UpToDate());

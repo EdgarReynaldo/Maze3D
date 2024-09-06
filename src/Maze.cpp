@@ -689,14 +689,23 @@ void Maze::Display() {
             for (unsigned int dir = ROOM_ABOVE ; dir < NUM_ROOM_FACES ; ++dir) {
                Face* f = GetFace(y,z,x,(ROOM_FACE)dir);
                EAGLE_ASSERT(f);
-               if (!(f->Open())) {
-                  f->Display(TextureIDs[dir]);
+               if (f->Open()) {
+                  continue;
                }
+               f->Display(TextureIDs[dir]);
             }
          }
       }
    }
 }
+
+
+
+
+
+
+
+
 
 
 

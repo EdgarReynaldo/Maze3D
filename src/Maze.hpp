@@ -12,8 +12,9 @@
 
 
 #include "Room.hpp"
-#include "Face.hpp"
-#include "Vec3D.hpp"
+#include "Eagle/Face.hpp"
+#include "Eagle/Mesh.hpp"
+#include "Eagle/Vec3.hpp"
 #include "PathSet.hpp"
 #include "RNG.hpp"
 

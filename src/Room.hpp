@@ -7,8 +7,10 @@
 
 
 #include "Face.hpp"
+#include "Eagle/Mesh.hpp"
 
 class PathSet;
+
 
 class Room {
    Face* faces[NUM_ROOM_FACES];
