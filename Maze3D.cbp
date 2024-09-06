@@ -56,10 +56,6 @@
 		<Unit filename="Ideas.txt" />
 		<Unit filename="src/Cube.cpp" />
 		<Unit filename="src/Cube.hpp" />
-		<Unit filename="src/Face.cpp" />
-		<Unit filename="src/Face.hpp" />
-		<Unit filename="src/Globals.cpp" />
-		<Unit filename="src/Globals.hpp" />
 		<Unit filename="src/Maze.cpp" />
 		<Unit filename="src/Maze.hpp" />
 		<Unit filename="src/Maze3DMain.cpp" />
