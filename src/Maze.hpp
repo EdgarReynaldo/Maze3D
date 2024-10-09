@@ -22,9 +22,10 @@
 #include "GL/gl.h"
 
 class Maze {
-protected :
+public :
    std::vector<Room> rooms;
    std::vector<Face> faces;
+   std::vector<Face> faces_out;
    std::vector<Vec3> vertices;
    std::vector<PathSet> path_sets;
 
@@ -36,19 +37,21 @@ protected :
    int nrooms_total;
    int nverts_total;
    int nfaces_total;
+   int nfaces_out_total;/// Number of faces on the outside of the maze
 
    int floor_area;/// width * depth
    int side_area;/// height * depth
    int front_area;/// width * height
-
+   
    struct FaceInfo {
       int index;
       int size;
       FaceInfo() : index(-1) , size(0) {}
    };
 
-   FaceInfo face_info[NUM_FACE_TYPES];
-
+   FaceInfo face_info[NUM_ROOM_FACES];
+   FaceInfo face_out_info[NUM_ROOM_FACES];
+   
    RNG rng;
    
    
@@ -83,46 +86,18 @@ protected :
 
    Room* GetRoom(int index);
    int GetRoomIndex(int floor , int row , int col);
-   Room* GetRoom(int floor , int row , int col) {
-      return GetRoom(GetRoomIndex(floor,row,col));
-   }
    
    Face* GetFace(int index);
    int GetFaceIndex(int floor , int row , int col , ROOM_FACE face);
-   Face* GetFace(int floor , int row , int col , ROOM_FACE face) {
-      return GetFace(GetFaceIndex(floor,row,col,face));
-   }
-   
+   Face* GetFaceOut(int index);
+   int GetFaceOut(ROOM_FACE face , int yindex , int xindex , int zindex);
+   ///< Pass the xyz position of the face, irrelevant index will be ignored
+   int GetFaceOutIndex(ROOM_FACE face , int yindex , int xindex , int zindex);
    Vec3* GetVertex(int index);
    int GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner);
-   Vec3* GetVertex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner) {
-      return GetVertex(GetVertexIndex(floor,row,col,face,corner));
-   }
-
-
-
-
 
 public :
-   Maze() :
-         rooms(),
-         faces(),
-         vertices(),
-         path_sets(),
-         TextureIDs(),
-         nrooms_wide(0),
-         nrooms_tall(0),
-         nrooms_deep(0),
-         nrooms_total(0),
-         nverts_total(0),
-         nfaces_total(0),
-         floor_area(0),
-         side_area(0),
-         front_area(0),
-         face_info(),
-         rng()
-   {}
-
+   Maze();
    ~Maze();
 
 

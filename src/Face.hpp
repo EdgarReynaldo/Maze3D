@@ -51,11 +51,14 @@ struct Vec3D;
 class Room;
 
 class Face {
+   
+   friend class Maze;
+   
+   Face* reverse_face;
    Room* rooms[ROOM_NUM_DIRECTIONS];
    Vec3* v[NUM_FACE_CORNERS];
 
-   GLuint texidpos;/// Texture id for the POSITIVE direction
-   GLuint texidneg;/// Texture id for the NEGATIVE direction
+   GLuint texid;///< Texture id
 
    int kweight;
    
@@ -76,6 +79,8 @@ public :
    Room* GetRoom(ROOM_DIRECTION dir);
    
    void Display(GLuint tex);
+   void Outline(EagleColor col);
+
    void SetOpen(bool face_open) {open = face_open;}
 };
 

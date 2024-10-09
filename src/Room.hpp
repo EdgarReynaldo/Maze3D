@@ -13,7 +13,7 @@ class PathSet;
 
 
 class Room {
-   Face* faces[NUM_ROOM_FACES];
+   Face* faces[NUM_ROOM_FACES];/// Inside faces of room
    PathSet* path_set;/// holds a list of rooms that can be reached by this room
    
 public :

@@ -37,12 +37,11 @@ const int WEIGHT_ROOMS_LATER = 4;
 
 
 void Maze::ResetFaces(int weight) {
-   const int stop = (int)faces.size();
-   int i = 0;
-   while (i < stop) {
+   for (int i = 0 ; i < faces.size() ; ++i) {
       faces[i].SetWeight(weight);
-      ++i;
-      
+   }
+   for (int i = 0 ; i < faces_out.size() ; ++i) {
+      faces_out[i].SetWeight(WEIGHT_OUTSIDE);
    }
 }
 
@@ -52,8 +51,8 @@ void Maze::AssignAboveBelowFaceWeightsOutside() {
    /// Do the floor and ceiling of the maze
    for (int z = 0 ; z < nrooms_deep ; ++z) {
       for (int x = 0 ; x < nrooms_wide ; ++x) {
-         Face* floor = GetFace(0,z,x,ROOM_BELOW);
-         Face* ceiling = GetFace(nrooms_tall - 1,z,x,ROOM_ABOVE);
+         Face* floor = GetFaceOut(GetFaceOutIndex(ROOM_BELOW , 0,z,x));
+         Face* ceiling = GetFaceOut(GetFaceOutIndex(ROOM_ABOVE , nrooms_tall - 1,z,x));
          floor->SetWeight(WEIGHT_OUTSIDE);
          ceiling->SetWeight(WEIGHT_OUTSIDE);
       }
@@ -66,8 +65,8 @@ void Maze::AssignEastWestFaceWeightsOutside() {
    /// Do the west and east outside of the maze
    for (int y = 0 ; y < nrooms_tall ; ++y) {
       for (int z = 0 ; z < nrooms_deep ; ++z) {
-         Face* west = GetFace(y,z,0,ROOM_WEST);
-         Face* east = GetFace(y,z,nrooms_wide - 1,ROOM_EAST);
+         Face* west = GetFaceOut(GetFaceOutIndex(ROOM_WEST,y,0,z));
+         Face* east = GetFaceOut(GetFaceOutIndex(ROOM_EAST,y,nrooms_wide - 1,z));
          west->SetWeight(WEIGHT_OUTSIDE);
          east->SetWeight(WEIGHT_OUTSIDE);
       }
@@ -80,8 +79,8 @@ void Maze::AssignNorthSouthFaceWeightsOutside() {
    /// Do the north and south outside of the maze
    for (int y = 0 ; y < nrooms_tall ; ++y) {
       for (int x = 0 ; x < nrooms_wide ; ++x) {
-         Face* south = GetFace(y,0,x,ROOM_SOUTH);
-         Face* north = GetFace(y,nrooms_deep-1,x,ROOM_NORTH);
+         Face* south = GetFaceOut(GetFaceOutIndex(ROOM_SOUTH,y,x,0));
+         Face* north = GetFaceOut(GetFaceOutIndex(ROOM_NORTH,y,x,nrooms_deep-1));
          south->SetWeight(WEIGHT_OUTSIDE);
          north->SetWeight(WEIGHT_OUTSIDE);
       }
@@ -107,8 +106,8 @@ void Maze::AssignFaceWeightsKeep() {
 
 void Maze::AssignFaceWeightsExit() {
    /// Find a random face on the front and back of the maze
-   Face* front = GetFace(rng.Rand0toNM1(nrooms_tall) , 0 , rng.Rand0toNM1(nrooms_wide), ROOM_SOUTH);
-   Face* back = GetFace(rng.Rand0toNM1(nrooms_tall) , nrooms_deep - 1 , rng.Rand0toNM1(nrooms_wide), ROOM_SOUTH);
+   Face* front = GetFaceOut(ROOM_SOUTH , rng.Rand0toNM1(nrooms_tall) , 0 , rng.Rand0toNM1(nrooms_wide));
+   Face* back = GetFaceOut(ROOM_NORTH , rng.Rand0toNM1(nrooms_tall) , nrooms_deep - 1 , rng.Rand0toNM1(nrooms_wide));
 
    front->SetWeight(WEIGHT_EXITS);
    back->SetWeight(WEIGHT_EXITS);
@@ -248,8 +247,8 @@ int Maze::GetFaceIndex(int floor , int row , int col , ROOM_FACE face) {
    ROOM_DIRECTION dir = GetRoomDirection(face);/// positive or negative
    FACE_TYPE type = GetFaceType(face);/// axis type
 
-   int start_index = face_info[type].index;
-   int stop_index = start_index + face_info[type].size;
+   int start_index = face_info[face].index;
+   int stop_index = start_index + face_info[face].size;
 
    if (dir == ROOM_POSITIVE) {
       switch (type) {
@@ -292,6 +291,52 @@ int Maze::GetFaceIndex(int floor , int row , int col , ROOM_FACE face) {
 
 
 
+int Maze::GetFaceOut(ROOM_FACE face , int yindex , int xindex , int zindex) {
+   return GetFaceOutIndex(face,yindex,xindex,zindex);
+}
+
+int Maze::GetFaceOutIndex(ROOM_FACE face , int yindex , int xindex , int zindex) {
+   int index = face_out_info[(int)face].index;
+   switch (face) {
+   case ROOM_ABOVE :
+      /// ceiling of maze
+      (void)yindex;
+      index += nrooms_wide*zindex + xindex;
+      break;
+   case ROOM_BELOW :
+      /// floor of maze
+      (void)yindex;
+      index += nrooms_wide*zindex + xindex;
+      break;
+   case ROOM_NORTH :
+      /// back of maze
+      (void)zindex;
+      index += nrooms_wide*yindex + xindex;
+      break;
+   case ROOM_SOUTH :
+      /// front of maze
+      (void)zindex;
+      index += nrooms_wide*yindex + xindex;
+      break;
+   case ROOM_EAST :
+      /// right side of maze
+      (void)xindex;
+      index += nrooms_deep*yindex + zindex;
+      break;
+   case ROOM_WEST :
+      /// left side of maze
+      (void)xindex;
+      index += nrooms_deep*yindex + zindex;
+      break;
+   default :
+      assert(0);
+      break;
+   }
+   
+}
+
+
+
 Vec3* Maze::GetVertex(int index) {
    return &(vertices[index]);
 }
@@ -322,6 +367,7 @@ int Maze::GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_C
    switch (face) {
    case ROOM_ABOVE :
       /// Ceiling
+      y += 1;
       switch (corner) {
       case FC_UPPERLEFT :
          (void)0;
@@ -362,6 +408,7 @@ int Maze::GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_C
       break;
    case ROOM_NORTH :
       /// North wall, positive z
+      z += 1;
       switch (corner) {
       case FC_UPPERLEFT :
          y += 1;
@@ -385,15 +432,15 @@ int Maze::GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_C
       switch (corner) {
       case FC_UPPERLEFT :
          y += 1;
+         x += 1;
          break;
       case FC_LOWERLEFT :
-         (void)0;
+         x += 1;
          break;
       case FC_LOWERRIGHT :
-         x += 1;
+         (void)0;
          break;
       case FC_UPPERRIGHT :
-         x += 1;
          y += 1;
          break;
       default : (void)0;break;
@@ -402,25 +449,23 @@ int Maze::GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_C
       break;
    case ROOM_EAST :
       /// East wall
+      x += 1;
       switch (corner) {
       case FC_UPPERLEFT :
          // upper north east
-         x += 1;
          y += 1;
          z += 1;
          break;
       case FC_LOWERLEFT :
          // lower north east
-         x += 1;
          z += 1;
          break;
       case FC_LOWERRIGHT :
          // lower south east
-         x += 1;
+         (void)0;
          break;
       case FC_UPPERRIGHT :
          // upper south east
-         x += 1;
          y += 1;
          break;
       default : (void)0;break;
@@ -464,6 +509,53 @@ int Maze::GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_C
 }
 
 
+Room* Maze::GetRoom(int floor , int row , int col) {
+   return GetRoom(GetRoomIndex(floor,row,col));
+}
+
+
+
+Face* Maze::GetFace(ROOM_FACE face , int floor , int row , int col) {
+   return GetFace(GetFaceIndex(floor,row,col,face));
+}
+
+
+
+Face* Maze::GetFaceOut(ROOM_FACE face , int yindex , int xindex , int zindex);
+   return GetFaceOut(GetFaceOutIndex(face , int yindex , int xindex , int zindex));
+}
+
+
+
+Vec3* Maze::GetVertex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner) {
+   return GetVertex(GetVertexIndex(floor,row,col,face,corner));
+}
+
+
+
+Maze::Maze() :
+      rooms(),
+      faces(),
+      faces_out(),
+      vertices(),
+      path_sets(),
+      TextureIDs(),
+      nrooms_wide(0),
+      nrooms_tall(0),
+      nrooms_deep(0),
+      nrooms_total(0),
+      nverts_total(0),
+      nfaces_total(0),
+      nfaces_out_total(0),
+      floor_area(0),
+      side_area(0),
+      front_area(0),
+      face_info(),
+      face_out_info(),
+      rng()
+{}
+
+
 
 Maze::~Maze() {
    ClearMaze();
@@ -474,6 +566,7 @@ Maze::~Maze() {
 void Maze::ClearMaze() {
    rooms.clear();
    faces.clear();
+   faces_out.clear();
    vertices.clear();
    path_sets.clear();
 
@@ -481,8 +574,9 @@ void Maze::ClearMaze() {
    floor_area = side_area = front_area = 0;
    nverts_total = 0;
    nfaces_total = 0;
-
-   memset(face_info , 0 , sizeof(FaceInfo)*NUM_FACE_TYPES);
+   nfaces_out_total = 0;
+   memset(face_info , 0 , sizeof(FaceInfo)*NUM_ROOM_FACES);
+   memset(face_out_info , 0 , sizeof(FaceInfo)*NUM_ROOM_FACES);
 }
 
 
@@ -524,39 +618,73 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
 
    /// Count number of faces
 
-   nfaces_total = 3*nrooms_total;/// Each room has a west, south, and down face (which is someone else's east, north, or up face except on the edge)
-   nfaces_total += side_area;/// Add in the faces on the east
-   nfaces_total += front_area;/// Add in the faces on the north
-   nfaces_total += floor_area;/// Add in the faces on the ceiling
-
+   nfaces_total = 6*nrooms_total;/// Each room has 6 inside faces
    faces.resize(nfaces_total);
 
+   int noutside_faces = side_area + floor_area + front_area;
+   int noutside_faces *= 2;
+   nfaces_out_total = noutside_faces;
+   faces_out.resize();
+   
+   
    /// Reset the faces
 
    Face* f = &faces[0];
    for (int i = 0 ; i < nfaces_total ; ++i ,++f) {
       f->Reset();
    }
+   Face* oface = faces_out[0];
+   for (int i = 0 ; i < nfaces_out_total ; ++i , ++f) {
+      oface->Reset();
+   }
+   
 
    /** Setup our face indices */
 
-   /// Bottom / Top faces are stored in the first third of the vector
+   /// Top / Bottom faces are stored in the first third of the vector
    face_info[0].index = 0;
-
-   face_info[0].size = (nrooms_tall + 1)*floor_area;/// There are n + 1 floors
+   face_info[0].size = nrooms_tall*floor_area;
+   face_info[1].index = face_info[0].index + face_info[0].size;
+   face_info[1].size = nrooms_tall*floor_area;
 
    /// North / South faces are stored in the second third of the vector
-   face_info[1].index = face_info[0].index + face_info[0].size;
-
-   face_info[1].size = (nrooms_deep + 1)*front_area;
+   face_info[2].index = face_info[1].index + face_info[1].size;
+   face_info[2].size = nrooms_deep*front_area;
+   face_info[3].index = face_info[2].index + face_info[2].size;
+   face_info[3].size = nrooms_deep*front_area;
 
    /// West / East faces are stored in the third third of the vector
-   face_info[2].index = face_info[1].index + face_info[1].size;
+   face_info[4].index = face_info[3].index + face_info[3].size;
+   face_info[4].size = nrooms_wide*side_area;
+   face_info[5].index = face_info[4].index + face_info[4].size;
+   face_info[5].size = nrooms_wide*side_area;
 
-   face_info[2].size = (nrooms_wide + 1)*side_area;
+   assert(face_info[5].index + face_info[5].size == (int)faces.size());/// Make sure our indices and sizes are correct
 
-   assert(face_info[2].index + face_info[2].size == (int)faces.size());/// Make sure our indices and sizes are correct
-
+   
+   /// Setup outside faces
+   // Ceiling, up
+   face_out_info[0].index = 0;
+   face_out_info[0].size = floor_area;
+   // Floor, down
+   face_out_info[1].index = face_out_info[0].index + face_out_info[0].size;
+   face_out_info[1].size = floor_area;
+   // North, forward
+   face_out_info[2].index = face_out_info[1].index + face_out_info[1].size;
+   face_out_info[2].size = side_area;
+   // South, backwards
+   face_out_info[3].index = face_out_info[2].index + face_out_info[2].size;
+   face_out_info[3].size = side_area;
+   // East, right
+   face_out_info[4].index = face_out_info[3].index + face_out_info[3].size;
+   face_out_info[4].size = front_area;
+   // West, left
+   face_out_info[5].index = face_out_info[4].index + face_out_info[4].size;
+   face_out_info[5].size = front_area;
+   
+   assert(face_out_info[5].index + face_out_info[5].size == (int)faces_out.size());
+   
+   
    /// Setup our vertice array
    nverts_total = (nrooms_tall + 1)*(nrooms_deep + 1)*(nrooms_wide + 1);
 
@@ -678,26 +806,67 @@ void Maze::KruskalRemoval() {
 
 void Maze::SetFaceTexture(ROOM_FACE face , GLuint texid) {
    TextureIDs[face] = texid;
+   for (int y = 0 ; y < nrooms_tall ; ++y) {
+      for (int z = 0 ; z < nrooms_deep ; ++z) {
+         for (int x = 0 ; x < nrooms_wide ; ++x) {
+            Face* f = GetFace(y,z,x,face);
+            f->texidpos = texid;
+         }
+      }
+   }
 }
 
 
 
 void Maze::Display() {
+
+   glEnable(GL_CULL_FACE);
+   glFrontFace(GL_CCW);
+   glEnable(GL_BLEND);
+   glEnable(GL_TEXTURE_2D);
+   glEnable(GL_DEPTH_TEST);
+   glClear(GL_DEPTH_BUFFER_BIT);
+
+   /// These are the outer faces of the maze in 3d space.
+   for (unsigned int j < 0 ; j < faces_out.size() ; ++j) {
+      Face& f = faces_out[j];
+      (void)f;
+//      f.Display(f.texidpos);
+   }
+   for (unsigned int i = 0 , j < 0 ; i < faces.size() ; ++i) {
+      Face& f = faces[i];
+      f.Display(f.texidpos);
+   }
+   glDisable(GL_CULL_FACE);
+   glDisable(GL_TEXTURE_2D);
+   glDisable(GL_DEPTH_TEST);
+   glDisable(GL_BLEND);
+   for (unsigned int i = 0 ; i < faces.size() ; ++i) {
+      Face& f = faces[i];
+      f.Outline(EagleColor(0,255,0,255));
+   }
+}
+/**
    for (int y = 0 ; y < nrooms_tall ; ++y) {
       for (int z = 0 ; z < nrooms_deep ; ++z) {
          for (int x = 0 ; x < nrooms_wide ; ++x) {
             for (unsigned int dir = ROOM_ABOVE ; dir < NUM_ROOM_FACES ; ++dir) {
+               if (dir == ROOM_ABOVE || dir == ROOM_BELOW) {continue;}
                Face* f = GetFace(y,z,x,(ROOM_FACE)dir);
                EAGLE_ASSERT(f);
                if (f->Open()) {
-                  continue;
+//                  continue;
                }
+               glEnable(GL_TEXTURE_2D);
                f->Display(TextureIDs[dir]);
+               glDisable(GL_TEXTURE_2D);
+               f->Outline(EagleColor(0,255,0,255));///Display(TextureIDs[dir]);
             }
          }
       }
    }
 }
+//*/
 
 
 

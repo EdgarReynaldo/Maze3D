@@ -15,6 +15,75 @@
 #include "GL/gl.h"
 
 
+
+int main2(int argc , char** argv) {
+
+   (void)argc;
+   (void)argv;
+   
+   Allegro5System* sys = GetAllegro5System();
+   EAGLE_ASSERT(sys);
+   
+   int ret = sys->Initialize(EAGLE_FULL_SETUP);
+   
+   EagleGraphicsContext* win = sys->CreateGraphicsContext("Maze game" , 1024 , 768 , EAGLE_WINDOWED | EAGLE_OPENGL);
+   
+   EagleImage* img = win->CreateImage(512,512);
+   
+   win->SetDrawingTarget(img);
+   win->Clear(EagleColor(0,255,0,255));
+   win->DrawTextString(win->DefaultFont() , "ABC" , 256.0f , 256.0f , EagleColor(255,127,0) , HALIGN_CENTER , VALIGN_CENTER);
+
+   win->DrawToBackBuffer();
+   win->Clear();
+   
+//   win->Draw(img , 256.0 , 256.0);
+//*
+
+   SetupOpenGLDebug();
+
+//   glEnable(GL_TEXTURE_2D);
+//   glEnable(GL_BLEND);
+//   glBindTexture(GL_TEXTURE_2D , al_get_opengl_texture(GetAllegroBitmap(img)));
+   
+//   Allegro5SpaceCamera cam;
+//   cam.Setup2D(1024,768);
+   
+   Maze m;
+   m.CreateMaze(3,3,3);
+   m.Display();
+/**
+   glBegin(GL_LINE_LOOP);
+      glColor3ub(0,255,0);
+      
+//      glTexCoord2f(0.0f , 1.0f);
+      glVertex3d(256.0 , 256.0 , 0.0);
+
+//      glTexCoord2f(0.0f , 0.0f);
+      glVertex3d(256.0 , 512.0 , 0.0);
+
+//      glTexCoord2f(1.0f , 0.0f);
+      glVertex3d(768.0 , 512.0 , 0.0);
+
+//      glTexCoord2f(1.0f , 1.0f);
+      glVertex3d(768.0 , 256.0 , 0.0);
+
+            
+   glEnd();
+*/
+   
+   DumpErrors();
+   
+//*/
+   win->FlipDisplay();
+   sys->Rest(3.0);
+   
+   
+   return 0;
+}
+
+
+
 int main(int argc , char** argv) {
    
    (void)argc;
@@ -27,24 +96,27 @@ int main(int argc , char** argv) {
    int ret = sys->Initialize(EAGLE_FULL_SETUP);
    
    EagleGraphicsContext* win = sys->CreateGraphicsContext("Maze game" , 1024 , 768 , EAGLE_WINDOWED | EAGLE_OPENGL);
+
+      
+   EagleFont* font = win->GetFont("Data/Fonts/Verdana.ttf" , -20);
    
-   
+   int tw = 32;
+   int th = 32;
    EagleImage* faces[6] = {
-      win->CreateImage(256,256),
-      win->CreateImage(256,256),
-      win->CreateImage(256,256),
-      win->CreateImage(256,256),
-      win->CreateImage(256,256),
-      win->CreateImage(256,256)
+      win->CreateImage(tw,th),
+      win->CreateImage(tw,th),
+      win->CreateImage(tw,th),
+      win->CreateImage(tw,th),
+      win->CreateImage(tw,th),
+      win->CreateImage(tw,th)
    };
-   GLuint texids[6];
-   char dirs[6] = {'U' , 'D' , 'N' , 'S' , 'E' , 'W'};
+   GLuint texids[6] = {0,0,0,0,0,0};
+   const char* dirs[6] = {"U" , "D" , "N" , "S" , "E" , "W"};
    for (unsigned int i = 0 ; i < 6 ; ++i) {
-      std::string s;
-      s.push_back(dirs[i]);
+      std::string s = dirs[i];
       win->SetDrawingTarget(faces[i]);
-      win->Clear();
-      win->DrawTextString(win->DefaultFont() , s , 128.0f , 128.0f , EagleColor(255,255,255) , HALIGN_CENTER , VALIGN_CENTER);
+      win->Clear(EagleColor(255,255,255,255));
+      win->DrawTextString(font , s , tw/2 , th/2 , EagleColor(0,0,0) , HALIGN_CENTER , VALIGN_CENTER);
       texids[i] = al_get_opengl_texture(GetAllegroBitmap(faces[i]));
    }
    
@@ -72,7 +144,7 @@ int main(int argc , char** argv) {
    
    Maze m;
    m.CreateMaze(width , height , depth);
-   m.KruskalRemoval();
+//   m.KruskalRemoval();
    m.SetFaceTexture(ROOM_ABOVE , texids[ROOM_ABOVE]);
    m.SetFaceTexture(ROOM_BELOW , texids[ROOM_BELOW]);
    m.SetFaceTexture(ROOM_NORTH , texids[ROOM_NORTH]);
@@ -90,10 +162,18 @@ int main(int argc , char** argv) {
    
    sys->GetSystemTimer()->Start();
    
+   SetupOpenGLDebug();
+
    do {
       if (redraw) {
+         win->DrawToBackBuffer();
          win->Clear();
+         glClear(GL_DEPTH_BUFFER_BIT);
          cam.Setup3D(false);
+//         glEnable(GL_DEPTH_TEST);
+//         glEnable(GL_BLEND);
+//         glFrontFace(GL_CCW);
+//         glEnable(GL_CULL_FACE);
          m.Display();
          win->FlipDisplay();
          redraw = false;
@@ -149,6 +229,7 @@ int main(int argc , char** argv) {
       
    } while (!quit);
 
+   DumpErrors();
 
    return 0;
 }
