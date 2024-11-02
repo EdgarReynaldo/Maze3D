@@ -25,32 +25,21 @@ ROOM_DIRECTION GetRoomDirection(ROOM_FACE rf) {
 
 
 
-Face::Face() :
-      reverse_face(0),
-      rooms(),
+Face::Face(Wall* parent) :
+      parent_wall(parent),
       v(),
-      texid((unsigned int)-1),
-      kweight(0),
-      open(false)
+      texid((GLuint(-1)))
 {
-   Reset();
 }
 
 
 
 void Face::Reset() {
-   reverse_face = 0;
-   memset(rooms , 0 , sizeof(Room*)*ROOM_NUM_DIRECTIONS);
-   memset(v , 0 , sizeof(Vec3*)*NUM_FACE_CORNERS);
-   texid = (unsigned int)-1;
-   kweight = 0;
-   open = false;
-}
-
-
-
-void Face::SetRoom(ROOM_DIRECTION dir , Room* room) {
-   rooms[dir] = room;
+   /// parent_wall = ... Don't assign here
+   for (unsigned int i = 0 ; i < NUM_FACE_CORNERS ; ++i) {
+      v[i] = 0;//.SetXYZ(0.0,0.0,0.0);
+   }
+   texid = (GLuint)-1;
 }
 
 
@@ -61,16 +50,10 @@ void Face::SetVertex(FACE_CORNER corner , Vec3* vtx) {
 
 
 
-void Face::SetWeight(int w) {
-   kweight = w;
-}
-
-
-
-void Face::Display(GLuint tex) {
-   if (open) {return;}
+void Face::Display() {
+   
    Vec3 v3;
-   glBindTexture(GL_TEXTURE_2D , tex);
+   glBindTexture(GL_TEXTURE_2D , texid);
    
    glBegin(GL_TRIANGLE_FAN);
       glColor3ub(255,255,255);
@@ -121,6 +104,5 @@ void Face::Outline(EagleColor col) {
    
 
 
-Room* Face::GetRoom(ROOM_DIRECTION dir) {
-   return rooms[dir];
-}
+
+   

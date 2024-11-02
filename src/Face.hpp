@@ -48,40 +48,28 @@ enum FACE_CORNER {
 
 struct Vec3D;
 
-class Room;
+class Wall;
 
 class Face {
-   
    friend class Maze;
    
-   Face* reverse_face;
-   Room* rooms[ROOM_NUM_DIRECTIONS];
+   Wall* parent_wall;
+
    Vec3* v[NUM_FACE_CORNERS];
 
    GLuint texid;///< Texture id
 
-   int kweight;
-   
-   bool open;
-   
 public :
-   Face();
+   Face(Wall* parent);
    
    void Reset();
 
-   void SetRoom(ROOM_DIRECTION dir , Room* room);
    void SetVertex(FACE_CORNER corner , Vec3* vtx);
-   void SetWeight(int w);
    
-   bool Open() {return open;}
-   int Weight() {return kweight;}
-   
-   Room* GetRoom(ROOM_DIRECTION dir);
-   
-   void Display(GLuint tex);
+
+   void Display();
    void Outline(EagleColor col);
 
-   void SetOpen(bool face_open) {open = face_open;}
 };
 
 

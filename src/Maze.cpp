@@ -5,7 +5,7 @@
 #include "Maze.hpp"
 
 #include "Eagle/Exception.hpp"
-
+#include "Wall.hpp"
 
 /** These control how the maze will be generated */
 
@@ -36,12 +36,9 @@ const int WEIGHT_ROOMS_LATER = 4;
 
 
 
-void Maze::ResetFaces(int weight) {
-   for (int i = 0 ; i < faces.size() ; ++i) {
-      faces[i].SetWeight(weight);
-   }
-   for (int i = 0 ; i < faces_out.size() ; ++i) {
-      faces_out[i].SetWeight(WEIGHT_OUTSIDE);
+void Maze::ResetWalls(int weight) {
+   for (unsigned int i = 0 ; i < walls.size() ; ++i) {
+      walls[i].SetWeight(weight);
    }
 }
 
@@ -51,8 +48,12 @@ void Maze::AssignAboveBelowFaceWeightsOutside() {
    /// Do the floor and ceiling of the maze
    for (int z = 0 ; z < nrooms_deep ; ++z) {
       for (int x = 0 ; x < nrooms_wide ; ++x) {
-         Face* floor = GetFaceOut(GetFaceOutIndex(ROOM_BELOW , 0,z,x));
-         Face* ceiling = GetFaceOut(GetFaceOutIndex(ROOM_ABOVE , nrooms_tall - 1,z,x));
+         Room* bottom = GetRoom(0,z,x);
+         Wall* floor = GetWall(0,z,x, ROOM_BELOW);
+         
+         Room* top = GetRoom(nrooms_tall - 1 , z , x);
+         Wall* ceiling = GetWall(nrooms_tall - 1 , z , x , ROOM_ABOVE);
+
          floor->SetWeight(WEIGHT_OUTSIDE);
          ceiling->SetWeight(WEIGHT_OUTSIDE);
       }
@@ -65,8 +66,10 @@ void Maze::AssignEastWestFaceWeightsOutside() {
    /// Do the west and east outside of the maze
    for (int y = 0 ; y < nrooms_tall ; ++y) {
       for (int z = 0 ; z < nrooms_deep ; ++z) {
-         Face* west = GetFaceOut(GetFaceOutIndex(ROOM_WEST,y,0,z));
-         Face* east = GetFaceOut(GetFaceOutIndex(ROOM_EAST,y,nrooms_wide - 1,z));
+         Room* left = GetRoom(y,z,0);
+         Room* right = GetRoom(y,z,nrooms_wide - 1);
+         Wall* west = GetWall(y,z,0 , ROOM_WEST);
+         Wall* east = GetWall(y,z,nrooms_wide - 1 , ROOM_EAST);
          west->SetWeight(WEIGHT_OUTSIDE);
          east->SetWeight(WEIGHT_OUTSIDE);
       }
@@ -79,8 +82,10 @@ void Maze::AssignNorthSouthFaceWeightsOutside() {
    /// Do the north and south outside of the maze
    for (int y = 0 ; y < nrooms_tall ; ++y) {
       for (int x = 0 ; x < nrooms_wide ; ++x) {
-         Face* south = GetFaceOut(GetFaceOutIndex(ROOM_SOUTH,y,x,0));
-         Face* north = GetFaceOut(GetFaceOutIndex(ROOM_NORTH,y,x,nrooms_deep-1));
+         Room* forward = GetRoom(y,nrooms_deep - 1 , x);
+         Room* backward = GetRoom(y,0,x);
+         Wall* north = GetWall(y,nrooms_deep - 1 , x , ROOM_NORTH);
+         Wall* south = GetWall(y,0,x , ROOM_SOUTH);
          south->SetWeight(WEIGHT_OUTSIDE);
          north->SetWeight(WEIGHT_OUTSIDE);
       }
@@ -106,15 +111,12 @@ void Maze::AssignFaceWeightsKeep() {
 
 void Maze::AssignFaceWeightsExit() {
    /// Find a random face on the front and back of the maze
-   Face* front = GetFaceOut(ROOM_SOUTH , rng.Rand0toNM1(nrooms_tall) , 0 , rng.Rand0toNM1(nrooms_wide));
-   Face* back = GetFaceOut(ROOM_NORTH , rng.Rand0toNM1(nrooms_tall) , nrooms_deep - 1 , rng.Rand0toNM1(nrooms_wide));
-
-   front->SetWeight(WEIGHT_EXITS);
-   back->SetWeight(WEIGHT_EXITS);
-/** we need to do this in ProcessFaces
-   front->SetRoom(ROOM_NEGATIVE , 0);
-   back->SetRoom(ROOM_POSITIVE , 0);
-*/
+   Room* entrance = GetRoom(0,0,0);
+   Room* exit = GetRoom(nrooms_tall-1 , nrooms_deep-1, nrooms_wide-1);
+   Wall* in = GetWall(0,0,0 , ROOM_SOUTH);
+   Wall* out = GetWall(nrooms_tall-1,nrooms_deep-1,nrooms_wide-1 , ROOM_NORTH);
+   in->SetWeight(WEIGHT_EXITS);
+   out->SetWeight(WEIGHT_EXITS);
 }
 
 
@@ -147,7 +149,7 @@ void Maze::AssignFaceWeights() {
        are rooms and the connecting edge is a face (wall).
    */
 
-   ResetFaces(WEIGHT_NORMAL);
+   ResetWalls(WEIGHT_NORMAL);
 
    /// Assign all the outside faces
 
@@ -174,18 +176,16 @@ void Maze::AssignFaceWeights() {
 Maze::WEIGHTMAP Maze::CreateWeightMap() {
    WEIGHTMAP wmap;
    WMIT it = wmap.end();
-   Face* f = &faces[0];
-   for (int i = 0 ; i < nfaces_total ; ++i) {
-      it = wmap.find(f->Weight());
-      if (it == wmap.end()) {
-         /// Couldn't find this weight on the map, create a new empty vector and store it in the weight key
-         wmap.insert(WMPAIR(f->Weight() , std::vector<Face*>()));
+   Wall* w = &walls[0];
+   for (unsigned int i = 0 ; i < walls.size() ; ++i) {
+      it = wmap.find(w->Weight());
+      if (it != wmap.end()) {
+         it->second.push_back(w);
       }
       else {
-         /// Found this weight in the map, add it to the vector stored by the weight key
-         it->second.push_back(f);
+         wmap.insert(WMPAIR(w->Weight() , std::vector<Wall*>{}));
       }
-      ++f;
+      ++w;
    }
    return wmap;
 }
@@ -194,24 +194,22 @@ Maze::WEIGHTMAP Maze::CreateWeightMap() {
 
 void Maze::RandomizeWeightMap(WEIGHTMAP& wmap) {
    for (WMIT it = wmap.begin() ; it != wmap.end() ; ++it) {
-      RandomizeFaceVector(it->second);
+      RandomizeWallVector(it->second);
    }
 }
 
 
 
-void Maze::RandomizeFaceVector(FACEVEC& fvec) {
-   FACEVEC shuffle;
-   while ( fvec.size() ) {
-      int rnd = rng.Rand0toNM1(fvec.size());
-      Face* random_face = fvec[rnd];
-      shuffle.push_back(random_face);
-//      if (fvec.size()) {
-      fvec[rnd] = fvec.back();
-      fvec.pop_back();
-//      }
+void Maze::RandomizeWallVector(WALLVEC& wvec) {
+   WALLVEC shuffle;
+   while ( wvec.size() ) {
+      int rnd = rng.Rand0toNM1(wvec.size());
+      Wall* random_wall = wvec[rnd];
+      shuffle.push_back(random_wall);
+      wvec[rnd] = wvec.back();
+      wvec.pop_back();
    }
-   fvec = shuffle;
+   wvec = shuffle;
 }
 
 
@@ -225,6 +223,15 @@ Room* Maze::GetRoom(int index) {
 
 int Maze::GetRoomIndex(int floor , int row , int col) {
    int index = floor*floor_area + row*nrooms_deep + col;
+   if ((floor < 0) || (floor > nrooms_tall)) {
+      return -1;
+   }
+   if ((row < 0 ) || (row > nrooms_deep)) {
+      return -1;
+   }
+   if ((col < 0) || (col > nrooms_wide)) {
+      return -1;
+   }
    if (index >= 0 && index < (int)rooms.size()) {
       return index;
    }
@@ -233,107 +240,99 @@ int Maze::GetRoomIndex(int floor , int row , int col) {
 
 
 
-Face* Maze::GetFace(int index) {
-   if (index == -1) {return 0;}
-   return &(faces[index]);
-}
-
-
-
-int Maze::GetFaceIndex(int floor , int row , int col , ROOM_FACE face) {
-
-   /// We have 3 sections in our face array - first is up down second is forwards backwards third is right left
-
-   ROOM_DIRECTION dir = GetRoomDirection(face);/// positive or negative
-   FACE_TYPE type = GetFaceType(face);/// axis type
-
-   int start_index = face_info[face].index;
-   int stop_index = start_index + face_info[face].size;
-
-   if (dir == ROOM_POSITIVE) {
-      switch (type) {
-      case FACE_UPDOWN :
-         floor += 1;
-         break;
-      case FACE_NORTHSOUTH :
-         row += 1;
-         break;
-      case FACE_EASTWEST :
-         col += 1;
-         break;
-      default :
-         assert(0);
-         break;
-      }
+Wall* Maze::GetWall(int index) {
+   if ((index < 0) || (index >= nwalls_total)) {
+      EAGLE_ASSERT(false);
+      return 0;
    }
+   return &walls[index];
+}
 
-   int index = start_index;
-   switch (type) {
-   case FACE_UPDOWN :
-      index += floor*floor_area + row*nrooms_wide + col;
-      break;
-   case FACE_NORTHSOUTH :
-      index += row*front_area + floor*nrooms_wide + col;
-      break;
-   case FACE_EASTWEST :
-      index += col*side_area + floor*nrooms_deep + row;
-      break;
-   default :
-      assert(0);
-      break;
+
+
+Wall* Maze::GetWall(int floor , int row , int col , ROOM_FACE face) {
+   return GetWall(GetWallIndex(floor,row,col,face));
+}
+
+
+
+int Maze::GetWallIndex(int floor , int row , int col , ROOM_FACE face) {
+   if ((floor < 0) || (floor >= nrooms_tall)) {
+      EAGLE_ASSERT(false);
+      return 0;
    }
-
-   assert(index < nfaces_total);
-   assert(index < stop_index);
-
-   return index;
-}
-
-
-
-int Maze::GetFaceOut(ROOM_FACE face , int yindex , int xindex , int zindex) {
-   return GetFaceOutIndex(face,yindex,xindex,zindex);
-}
-
-int Maze::GetFaceOutIndex(ROOM_FACE face , int yindex , int xindex , int zindex) {
-   int index = face_out_info[(int)face].index;
-   switch (face) {
-   case ROOM_ABOVE :
-      /// ceiling of maze
-      (void)yindex;
-      index += nrooms_wide*zindex + xindex;
-      break;
-   case ROOM_BELOW :
-      /// floor of maze
-      (void)yindex;
-      index += nrooms_wide*zindex + xindex;
-      break;
-   case ROOM_NORTH :
-      /// back of maze
-      (void)zindex;
-      index += nrooms_wide*yindex + xindex;
-      break;
-   case ROOM_SOUTH :
-      /// front of maze
-      (void)zindex;
-      index += nrooms_wide*yindex + xindex;
-      break;
-   case ROOM_EAST :
-      /// right side of maze
-      (void)xindex;
-      index += nrooms_deep*yindex + zindex;
-      break;
-   case ROOM_WEST :
-      /// left side of maze
-      (void)xindex;
-      index += nrooms_deep*yindex + zindex;
-      break;
-   default :
-      assert(0);
-      break;
+   if ((row < 0) || (row >= nrooms_deep)) {
+      EAGLE_ASSERT(false);
+      return 0;
+   }
+   if ((col < 0) || (col >= nrooms_wide)) {
+      EAGLE_ASSERT(false);
+      return 0;
+   }
+   if ((face < 0) || (face >= NUM_ROOM_FACES)) {
+      EAGLE_ASSERT(false);
+      return 0;
    }
    
+   ROOM_DIRECTION rdir = GetRoomDirection(face);
+   int index = -1;
+   
+
+   if (rdir == ROOM_NEGATIVE) {
+      //check for outside faces
+      if (floor == 0 && face == ROOM_BELOW) {
+         //case ROOM_BELOW:
+         return 3*nrooms_total + nrooms_wide*row + col;/// floor_area
+      }
+      if (row == 0 && face == ROOM_SOUTH) {
+         //case ROOM_SOUTH:
+         return 3*nrooms_total + floor_area + nrooms_wide*floor + col;/// front area
+      }
+      if (col == 0 && face == ROOM_WEST) {
+         //case ROOM_WEST:
+         return 3*nrooms_total + floor_area + front_area + row;/// side area
+      }
+   }
+   switch (face) {
+   case ROOM_ABOVE:
+      index = 0;
+      break;
+   case ROOM_NORTH:
+      index = 1;
+      break;
+   case ROOM_EAST:
+      index = 2;
+      break;
+   case ROOM_BELOW:
+      index = 0;
+      EAGLE_ASSERT(floor > 0);
+      floor = floor - 1;
+      break;
+   case ROOM_SOUTH:
+      index = 1;
+      EAGLE_ASSERT(row > 0);
+      row = row - 1;
+      break;
+   case ROOM_WEST:
+      index = 2;
+      EAGLE_ASSERT(col > 0);
+      col = col - 1;
+      break;
+   default :
+      EAGLE_ASSERT(false);
+   }
+      
+   return index*nrooms_total + floor*floor_area + nrooms_wide*row + col;
+
+
+   EAGLE_ASSERT(false);
+   return -1;
 }
+
+
+
+
+
 
 
 
@@ -515,15 +514,9 @@ Room* Maze::GetRoom(int floor , int row , int col) {
 
 
 
-Face* Maze::GetFace(ROOM_FACE face , int floor , int row , int col) {
-   return GetFace(GetFaceIndex(floor,row,col,face));
-}
-
-
-
-Face* Maze::GetFaceOut(ROOM_FACE face , int yindex , int xindex , int zindex);
-   return GetFaceOut(GetFaceOutIndex(face , int yindex , int xindex , int zindex));
-}
+//Face* Maze::GetFace(ROOM_FACE face , int floor , int row , int col) {
+//   return GetFace(GetFaceIndex(face,floor,row,col));
+//}
 
 
 
@@ -535,8 +528,8 @@ Vec3* Maze::GetVertex(int floor , int row , int col , ROOM_FACE face , FACE_CORN
 
 Maze::Maze() :
       rooms(),
-      faces(),
-      faces_out(),
+      walls(),
+//      faces(),
       vertices(),
       path_sets(),
       TextureIDs(),
@@ -544,14 +537,13 @@ Maze::Maze() :
       nrooms_tall(0),
       nrooms_deep(0),
       nrooms_total(0),
+      nwalls_total(0),
+//      nfaces_total(0),
       nverts_total(0),
-      nfaces_total(0),
-      nfaces_out_total(0),
       floor_area(0),
       side_area(0),
       front_area(0),
-      face_info(),
-      face_out_info(),
+//      face_info(),
       rng()
 {}
 
@@ -565,18 +557,17 @@ Maze::~Maze() {
 
 void Maze::ClearMaze() {
    rooms.clear();
-   faces.clear();
-   faces_out.clear();
+   walls.clear();
+//   faces.clear();
+//   faces_out.clear();
    vertices.clear();
    path_sets.clear();
 
    nrooms_wide = nrooms_tall = nrooms_deep = nrooms_total = 0;
    floor_area = side_area = front_area = 0;
    nverts_total = 0;
-   nfaces_total = 0;
-   nfaces_out_total = 0;
-   memset(face_info , 0 , sizeof(FaceInfo)*NUM_ROOM_FACES);
-   memset(face_out_info , 0 , sizeof(FaceInfo)*NUM_ROOM_FACES);
+//   nfaces_total = 0;
+   nwalls_total = 0;
 }
 
 
@@ -588,24 +579,25 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
    nrooms_tall = abs(num_rooms_tall);
    nrooms_deep = abs(num_rooms_deep);
    nrooms_total = nrooms_tall*nrooms_wide*nrooms_deep;
-
    assert(nrooms_total > 0);
+
+   /// Reserve the rooms
+   rooms.resize(nrooms_total);
 
    floor_area = nrooms_wide*nrooms_deep;
    side_area = nrooms_tall*nrooms_deep;
    front_area = nrooms_wide*nrooms_tall;
 
-   /// Reserve the rooms
-
-   rooms.resize(nrooms_total);
+   /// Reserve the walls
+   
+   nwalls_total = 3*nrooms_total + floor_area + side_area + front_area;
+   walls.resize(nwalls_total);
 
 
    /// Reserve the path sets
-
    path_sets.resize(nrooms_total);
 
    /// Reset the rooms and path sets
-
    for (int i = 0 ; i < nrooms_total ; ++i) {
       Room* r = &rooms[i];
       r->Reset();
@@ -616,78 +608,8 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
       p->AddRoom(r);
    }
 
-   /// Count number of faces
-
-   nfaces_total = 6*nrooms_total;/// Each room has 6 inside faces
-   faces.resize(nfaces_total);
-
-   int noutside_faces = side_area + floor_area + front_area;
-   int noutside_faces *= 2;
-   nfaces_out_total = noutside_faces;
-   faces_out.resize();
-   
-   
-   /// Reset the faces
-
-   Face* f = &faces[0];
-   for (int i = 0 ; i < nfaces_total ; ++i ,++f) {
-      f->Reset();
-   }
-   Face* oface = faces_out[0];
-   for (int i = 0 ; i < nfaces_out_total ; ++i , ++f) {
-      oface->Reset();
-   }
-   
-
-   /** Setup our face indices */
-
-   /// Top / Bottom faces are stored in the first third of the vector
-   face_info[0].index = 0;
-   face_info[0].size = nrooms_tall*floor_area;
-   face_info[1].index = face_info[0].index + face_info[0].size;
-   face_info[1].size = nrooms_tall*floor_area;
-
-   /// North / South faces are stored in the second third of the vector
-   face_info[2].index = face_info[1].index + face_info[1].size;
-   face_info[2].size = nrooms_deep*front_area;
-   face_info[3].index = face_info[2].index + face_info[2].size;
-   face_info[3].size = nrooms_deep*front_area;
-
-   /// West / East faces are stored in the third third of the vector
-   face_info[4].index = face_info[3].index + face_info[3].size;
-   face_info[4].size = nrooms_wide*side_area;
-   face_info[5].index = face_info[4].index + face_info[4].size;
-   face_info[5].size = nrooms_wide*side_area;
-
-   assert(face_info[5].index + face_info[5].size == (int)faces.size());/// Make sure our indices and sizes are correct
-
-   
-   /// Setup outside faces
-   // Ceiling, up
-   face_out_info[0].index = 0;
-   face_out_info[0].size = floor_area;
-   // Floor, down
-   face_out_info[1].index = face_out_info[0].index + face_out_info[0].size;
-   face_out_info[1].size = floor_area;
-   // North, forward
-   face_out_info[2].index = face_out_info[1].index + face_out_info[1].size;
-   face_out_info[2].size = side_area;
-   // South, backwards
-   face_out_info[3].index = face_out_info[2].index + face_out_info[2].size;
-   face_out_info[3].size = side_area;
-   // East, right
-   face_out_info[4].index = face_out_info[3].index + face_out_info[3].size;
-   face_out_info[4].size = front_area;
-   // West, left
-   face_out_info[5].index = face_out_info[4].index + face_out_info[4].size;
-   face_out_info[5].size = front_area;
-   
-   assert(face_out_info[5].index + face_out_info[5].size == (int)faces_out.size());
-   
-   
    /// Setup our vertice array
    nverts_total = (nrooms_tall + 1)*(nrooms_deep + 1)*(nrooms_wide + 1);
-
    vertices.resize(nverts_total);
 
    int index = 0;
@@ -703,33 +625,76 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
    }
    EAGLE_ASSERT(index == nverts_total);
 
-   /// For each room, populate it's face pointers and the face's room pointers
-   index = 0;
+   
+   /// Populate neighbors
    for (int y = 0 ; y < num_rooms_tall ; ++y) {
       for (int z = 0 ; z < num_rooms_deep ; ++z) {
          for (int x = 0 ; x < num_rooms_wide ; ++x) {
-            /// Each room has six face pointers
-            /// Each face has two room pointers
-            Room* r = &rooms[index];
-
-            for (int i = 0 ; i < NUM_ROOM_FACES ; ++i) {
-               Face* f = GetFace(GetFaceIndex(y,z,x , (ROOM_FACE)i));
-               assert(f);
-               r->SetFace((ROOM_FACE)i , f);
-               /// get the direction to the face and reverse it
-               ROOM_DIRECTION dir = (GetRoomDirection((ROOM_FACE)i) == ROOM_POSITIVE)?ROOM_NEGATIVE:ROOM_POSITIVE;
-               f->SetRoom(dir , r);
+            Room* r = GetRoom(y,z,x);
+            if (r) {
+               
+               Wall* wa = r->walls[ROOM_ABOVE] = GetWall(y,z,x,ROOM_ABOVE);
+               Wall* wb = r->walls[ROOM_BELOW] = GetWall(y,z,x,ROOM_BELOW);
+               Wall* wn = r->walls[ROOM_NORTH] = GetWall(y,z,x,ROOM_NORTH);
+               Wall* ws = r->walls[ROOM_SOUTH] = GetWall(y,z,x,ROOM_SOUTH);
+               Wall* we = r->walls[ROOM_EAST]  = GetWall(y,z,x,ROOM_EAST);
+               Wall* ww = r->walls[ROOM_WEST]  = GetWall(y,z,x,ROOM_WEST);
+               Room* ra = r->neighbors[ROOM_ABOVE] = GetRoom(y+1,z,x);
+               Room* rb = r->neighbors[ROOM_BELOW] = GetRoom(y-1,z,x);
+               Room* rn = r->neighbors[ROOM_NORTH] = GetRoom(y,z+1,x);
+               Room* rs = r->neighbors[ROOM_SOUTH] = GetRoom(y,z-1,x);
+               Room* re = r->neighbors[ROOM_EAST]  = GetRoom(y,z,x+1);
+               Room* rw = r->neighbors[ROOM_WEST]  = GetRoom(y,z,x-1);
+               wa->room_pos = ra;
+               wa->room_neg = r;
+               wb->room_pos = r;
+               wb->room_neg = rb;
+               wn->room_pos = rn;
+               wn->room_neg = r;
+               ws->room_pos = r;
+               ws->room_neg = rs;
+               we->room_pos = re;
+               we->room_neg = r;
+               ww->room_pos = r;
+               ww->room_neg = rw;
+               
+               Face* fa = &wa->face_neg;
+               Face* fb = &wb->face_pos;
+               Face* fn = &wn->face_neg;
+               Face* fs = &ws->face_pos;
+               Face* fe = &we->face_neg;
+               Face* fw = &ww->face_pos;
+               /// faces outside of room
+               Face* fouta = &wa->face_pos;
+               Face* foutb = &wb->face_neg;
+               Face* foutn = &wn->face_pos;
+               Face* fouts = &ws->face_neg;
+               Face* foute = &we->face_pos;
+               Face* foutw = &ww->face_neg;
                for (int j = 0 ; j < NUM_FACE_CORNERS ; ++j) {
-                  Vec3* vtx = GetVertex(GetVertexIndex(y,z,x , (ROOM_FACE)i , (FACE_CORNER)j));
-                  f->SetVertex((FACE_CORNER)j , vtx);
+                  Vec3* vtxa = GetVertex(GetVertexIndex(y,z,x , ROOM_ABOVE , (FACE_CORNER)j));
+                  fa->SetVertex((FACE_CORNER)j , vtxa);
+                  fouta->SetVertex((FACE_CORNER)(3-j),vtxa);
+                  Vec3* vtxb = GetVertex(GetVertexIndex(y,z,x , ROOM_BELOW , (FACE_CORNER)j));
+                  fb->SetVertex((FACE_CORNER)j , vtxb);
+                  foutb->SetVertex((FACE_CORNER)(3-j),vtxb);
+                  Vec3* vtxn = GetVertex(GetVertexIndex(y,z,x , ROOM_NORTH , (FACE_CORNER)j));
+                  fn->SetVertex((FACE_CORNER)j , vtxn);
+                  foutn->SetVertex((FACE_CORNER)(3-j),vtxn);
+                  Vec3* vtxs = GetVertex(GetVertexIndex(y,z,x , ROOM_SOUTH , (FACE_CORNER)j));
+                  fs->SetVertex((FACE_CORNER)j , vtxs);
+                  fouts->SetVertex((FACE_CORNER)(3-j),vtxs);
+                  Vec3* vtxe = GetVertex(GetVertexIndex(y,z,x , ROOM_EAST , (FACE_CORNER)j));
+                  fe->SetVertex((FACE_CORNER)j , vtxe);
+                  foute->SetVertex((FACE_CORNER)(3-j),vtxe);
+                  Vec3* vtxw = GetVertex(GetVertexIndex(y,z,x , ROOM_WEST , (FACE_CORNER)j));
+                  fw->SetVertex((FACE_CORNER)j , vtxw);
+                  foutw->SetVertex((FACE_CORNER)(3-j),vtxw);
                }
             }
-
-            ++index;
          }
       }
    }
-
    return true;
 }
 
@@ -745,13 +710,13 @@ void Maze::KruskalRemoval() {
    /// Put the map in a vector for processing now that it is sorted
    /// The order has already been randomized, so they will be in final order already
 
-   FACEVEC sorted;
-   FACEVEC* fvec = 0;
+   WALLVEC sorted;
+   WALLVEC* wvec = 0;
 
    WMIT it = wmap.begin();
    while (it != wmap.end()) {
-      fvec = &(it->second);
-      sorted.insert(sorted.end() , fvec->begin() , fvec->end());
+      wvec = &(it->second);
+      sorted.insert(sorted.end() , wvec->begin() , wvec->end());
       ++it;
    }
    assert(sorted.size());
@@ -762,8 +727,8 @@ void Maze::KruskalRemoval() {
 
    /// Skip all weights less than the minimum
    for ( ; start < (int)sorted.size() ; ++start) {
-      Face* f = sorted[start];
-      if (f->Weight() >= WEIGHT_MINIMUM) {
+      Wall* w = sorted[start];
+      if (w->Weight() >= WEIGHT_MINIMUM) {
          break;
       }
    }
@@ -771,12 +736,12 @@ void Maze::KruskalRemoval() {
    /// For every other edge check if removal would create a cycle if so keep it and keep the cycle broken
    /// This is what makes the spanning tree
    for (int i = start ; i < (int)sorted.size() ; ++i) {
-      Face* f = sorted[i];
-      Room* rpos = f->GetRoom(ROOM_POSITIVE);
-      Room* rneg = f->GetRoom(ROOM_NEGATIVE);
+      Wall* w = sorted[i];
+      Room* rpos = w->GetRoomPos();
+      Room* rneg = w->GetRoomNeg();
       Room** r1 = rpos?&rpos:rneg?&rneg:0;/// Set r1 to the address of the first non-null Room*
       Room** r2 = (r1 == &rpos)?&rneg:&rpos;/// Set r2 to the other pointer
-      assert(*r1);/// There should be at least one room connected to this face
+      assert(*r1);/// There should be at least one room connected to this wall
       if (*r2) {/// Both Room*s are non-null
          PathSet* pset1 = (*r1)->GetPathSet();
          PathSet* pset2 = (*r2)->GetPathSet();
@@ -786,11 +751,11 @@ void Maze::KruskalRemoval() {
          if (pset1 == pset2) {
                /** If both PathSet*s are the same, then these two rooms are already connected somehow,
                    and removing the edge would create a cycle */
-               f->SetOpen(false);
+               w->SetOpen(false);
                continue;
          }
          else {
-            f->SetOpen(true);
+            w->SetOpen(true);
             pset1->AbsorbPathSet(pset2);
          }
 
@@ -809,8 +774,10 @@ void Maze::SetFaceTexture(ROOM_FACE face , GLuint texid) {
    for (int y = 0 ; y < nrooms_tall ; ++y) {
       for (int z = 0 ; z < nrooms_deep ; ++z) {
          for (int x = 0 ; x < nrooms_wide ; ++x) {
-            Face* f = GetFace(y,z,x,face);
-            f->texidpos = texid;
+            Wall* w = GetWall(y,z,x,face);
+            Face* fp = w->GetFacePos();
+            Face* fn = w->GetFaceNeg();
+            fp->texid = fn->texid = texid;
          }
       }
    }
@@ -827,54 +794,19 @@ void Maze::Display() {
    glEnable(GL_DEPTH_TEST);
    glClear(GL_DEPTH_BUFFER_BIT);
 
-   /// These are the outer faces of the maze in 3d space.
-   for (unsigned int j < 0 ; j < faces_out.size() ; ++j) {
-      Face& f = faces_out[j];
-      (void)f;
-//      f.Display(f.texidpos);
+   Wall* w = &walls[0];
+   for (unsigned int i = 0 ; i < walls.size() ; ++i){
+      w->Display();
+      ++w;
    }
-   for (unsigned int i = 0 , j < 0 ; i < faces.size() ; ++i) {
-      Face& f = faces[i];
-      f.Display(f.texidpos);
-   }
+
    glDisable(GL_CULL_FACE);
    glDisable(GL_TEXTURE_2D);
    glDisable(GL_DEPTH_TEST);
    glDisable(GL_BLEND);
-   for (unsigned int i = 0 ; i < faces.size() ; ++i) {
-      Face& f = faces[i];
-      f.Outline(EagleColor(0,255,0,255));
+   for (unsigned int i = 0 ; i < walls.size() ; ++i) {
+      Wall& w = walls[i];
+      w.Outline(EagleColor(0,255,0,255));/// TODO : This results in black outlines investigate
    }
+   
 }
-/**
-   for (int y = 0 ; y < nrooms_tall ; ++y) {
-      for (int z = 0 ; z < nrooms_deep ; ++z) {
-         for (int x = 0 ; x < nrooms_wide ; ++x) {
-            for (unsigned int dir = ROOM_ABOVE ; dir < NUM_ROOM_FACES ; ++dir) {
-               if (dir == ROOM_ABOVE || dir == ROOM_BELOW) {continue;}
-               Face* f = GetFace(y,z,x,(ROOM_FACE)dir);
-               EAGLE_ASSERT(f);
-               if (f->Open()) {
-//                  continue;
-               }
-               glEnable(GL_TEXTURE_2D);
-               f->Display(TextureIDs[dir]);
-               glDisable(GL_TEXTURE_2D);
-               f->Outline(EagleColor(0,255,0,255));///Display(TextureIDs[dir]);
-            }
-         }
-      }
-   }
-}
-//*/
-
-
-
-
-
-
-
-
-
-
-

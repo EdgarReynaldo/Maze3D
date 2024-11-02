@@ -24,33 +24,33 @@
 class Maze {
 public :
    std::vector<Room> rooms;
-   std::vector<Face> faces;
-   std::vector<Face> faces_out;
+   std::vector<Wall> walls;
+//   std::vector<Face> faces;
+//   std::vector<Face> faces_out;
    std::vector<Vec3> vertices;
    std::vector<PathSet> path_sets;
 
-   GLuint TextureIDs[6];/// UDNSEW, corresponds to face directions
+   GLuint TextureIDs[6];/// UDNSEW, corresponds to face directions, base texture for wall faces
    
    int nrooms_wide;/// x
    int nrooms_tall;/// y
    int nrooms_deep;/// z (horizontal z, not vertical)
    int nrooms_total;
+   int nwalls_total;
+//   int nfaces_total;
    int nverts_total;
-   int nfaces_total;
-   int nfaces_out_total;/// Number of faces on the outside of the maze
 
    int floor_area;/// width * depth
    int side_area;/// height * depth
    int front_area;/// width * height
    
-   struct FaceInfo {
-      int index;
-      int size;
-      FaceInfo() : index(-1) , size(0) {}
-   };
+//   struct FaceInfo {
+//      int index;
+//      int size;
+//      FaceInfo() : index(-1) , size(0) {}
+//   };
 
-   FaceInfo face_info[NUM_ROOM_FACES];
-   FaceInfo face_out_info[NUM_ROOM_FACES];
+//   FaceInfo face_info[NUM_ROOM_FACES];
    
    RNG rng;
    
@@ -58,7 +58,7 @@ public :
    
 ///   Cube unit_cube;
 
-   void ResetFaces(int weight);
+   void ResetWalls(int weight);
 
    void AssignAboveBelowFaceWeightsOutside();
    void AssignEastWestFaceWeightsOutside();
@@ -72,35 +72,42 @@ public :
 
    void AssignFaceWeights();
 
-   typedef std::vector<Face*> FACEVEC;
-   typedef std::map<int , FACEVEC> WEIGHTMAP;
+   typedef std::vector<Wall*> WALLVEC;
+   typedef std::map<int , WALLVEC> WEIGHTMAP;
    typedef WEIGHTMAP::iterator WMIT;
-   typedef std::pair<int , FACEVEC> WMPAIR;
+   typedef std::pair<int , WALLVEC> WMPAIR;
    
    WEIGHTMAP CreateWeightMap();
 
    void RandomizeWeightMap(WEIGHTMAP& wmap);
 
-   void RandomizeFaceVector(FACEVEC& fvec);
+   void RandomizeWallVector(WALLVEC& wvec);
 
 
-   Room* GetRoom(int index);
-   int GetRoomIndex(int floor , int row , int col);
+   Room* GetRoom(int index);/// 0 to nrooms_total-1
+   Room* GetRoom(int floor , int row , int col);/// y z x
+   int GetRoomIndex(int floor , int row , int col);/// y z x
    
-   Face* GetFace(int index);
-   int GetFaceIndex(int floor , int row , int col , ROOM_FACE face);
-   Face* GetFaceOut(int index);
-   int GetFaceOut(ROOM_FACE face , int yindex , int xindex , int zindex);
-   ///< Pass the xyz position of the face, irrelevant index will be ignored
-   int GetFaceOutIndex(ROOM_FACE face , int yindex , int xindex , int zindex);
+   Wall* GetWall(int index);/// 0 to nwalls_total-1
+   Wall* GetWall(int floor , int row , int col , ROOM_FACE face);/// y z x
+   int GetWallIndex(int floor , int row , int col , ROOM_FACE face);/// y z x
+   
+//   Face* GetFace(int index);
+//   Face* GetFace(ROOM_FACE face , int floor , int row , int col);
+//   int GetFaceIndex(ROOM_FACE face , int floor , int row , int col);
+   
+//   Face* GetFaceOut(int index);
+//   Face* GetFaceOut(ROOM_FACE face , int yindex , int xindex , int zindex);
+//   ///< Pass the xyz position of the face, irrelevant index will be ignored
+//   int GetFaceOutIndex(ROOM_FACE face , int yindex , int xindex , int zindex);
+
    Vec3* GetVertex(int index);
+   Vec3* GetVertex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner);
    int GetVertexIndex(int floor , int row , int col , ROOM_FACE face , FACE_CORNER corner);
 
 public :
    Maze();
    ~Maze();
-
-
 
    void ClearMaze();
    

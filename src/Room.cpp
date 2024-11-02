@@ -13,8 +13,10 @@
 
 
 Room::Room() :
-      faces(),
-      path_set(0)
+      neighbors(),
+      walls(),
+      path_set(0),
+      xyzcoord()
 {
    Reset();
 }
@@ -22,13 +24,27 @@ Room::Room() :
 
 
 void Room::Reset() {
-   memset(faces , 0 , sizeof(Face*)*NUM_ROOM_FACES);
+   for (unsigned int i = 0 ; i < NUM_ROOM_FACES ; ++i) {
+      neighbors[i] = 0;
+   }
+   for (unsigned int i = 0 ; i < NUM_ROOM_FACES ; ++i) {
+      walls[i] = 0;
+   }
+   path_set = 0;
+   xyzcoord.SetXYZ(0,0,0);
 }
 
 
 
-void Room::SetFace(ROOM_FACE room_dir , Face* face) {
-   faces[room_dir] = face;
+void Room::SetNeighbor(ROOM_FACE room_dir , Room* r) {
+   EAGLE_ASSERT(room_dir >=0 && room_dir < NUM_ROOM_FACES);
+   neighbors[room_dir] = r;
+}
+
+
+
+void Room::SetWall(ROOM_FACE room_dir , Wall* w) {
+   walls[room_dir] = w;
 }
 
 
