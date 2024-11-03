@@ -15,6 +15,7 @@
 #include "Eagle/Face.hpp"
 #include "Eagle/Mesh.hpp"
 #include "Eagle/Vec3.hpp"
+#include "Eagle/Random.hpp"
 #include "PathSet.hpp"
 #include "RNG.hpp"
 
@@ -52,7 +53,7 @@ public :
 
 //   FaceInfo face_info[NUM_ROOM_FACES];
    
-   RNG rng;
+   MTRNG rng;
    
    
    
@@ -115,7 +116,7 @@ public :
 
    void KruskalRemoval();
 
-   void SetFaceTexture(ROOM_FACE face , GLuint texid);
+   void SetFaceTexture(ROOM_FACE face , GLuint texidpos , GLuint texidneg);
    void Display();
 };
 

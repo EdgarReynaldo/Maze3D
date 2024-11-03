@@ -9,6 +9,19 @@
 
 
 
+ROOM_FACE OppositeFace(ROOM_FACE f) {
+   if (f < NUM_ROOM_FACES && f >= 0) {
+      if (f % 2 == 0) {
+         return (ROOM_FACE)((int)f + 1);}
+      else {
+         return (ROOM_FACE)((int)f - 1);
+      }
+   }
+   return NUM_ROOM_FACES;
+}
+
+
+
 FACE_TYPE GetFaceType(ROOM_FACE rf) {
    return (FACE_TYPE)((int)rf/2);
 }

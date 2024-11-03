@@ -769,15 +769,19 @@ void Maze::KruskalRemoval() {
 
 
 
-void Maze::SetFaceTexture(ROOM_FACE face , GLuint texid) {
-   TextureIDs[face] = texid;
+void Maze::SetFaceTexture(ROOM_FACE face , GLuint texidpos , GLuint texidneg) {
+
+   TextureIDs[face] = texidpos;
+   TextureIDs[OppositeFace(face)] = texidneg;
+   /// For each wall
    for (int y = 0 ; y < nrooms_tall ; ++y) {
       for (int z = 0 ; z < nrooms_deep ; ++z) {
          for (int x = 0 ; x < nrooms_wide ; ++x) {
             Wall* w = GetWall(y,z,x,face);
             Face* fp = w->GetFacePos();
             Face* fn = w->GetFaceNeg();
-            fp->texid = fn->texid = texid;
+            fp->texid = texidpos;
+            fn->texid = texidneg;
          }
       }
    }
@@ -806,7 +810,7 @@ void Maze::Display() {
    glDisable(GL_BLEND);
    for (unsigned int i = 0 ; i < walls.size() ; ++i) {
       Wall& w = walls[i];
-      w.Outline(EagleColor(0,255,0,255));/// TODO : This results in black outlines investigate
+//      w.Outline(EagleColor(0,255,0,255));/// TODO : This results in black outlines investigate
    }
    
 }

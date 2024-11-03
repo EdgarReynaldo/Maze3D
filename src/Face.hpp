@@ -21,6 +21,8 @@ enum ROOM_FACE {
    NUM_ROOM_FACES = 6
 };
 
+ROOM_FACE OppositeFace(ROOM_FACE f);
+
 enum FACE_TYPE {
    FACE_UPDOWN = 0,
    FACE_NORTHSOUTH = 1,

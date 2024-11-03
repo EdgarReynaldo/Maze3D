@@ -145,12 +145,9 @@ int main(int argc , char** argv) {
    Maze m;
    m.CreateMaze(width , height , depth);
 //   m.KruskalRemoval();
-   m.SetFaceTexture(ROOM_ABOVE , texids[ROOM_ABOVE]);
-   m.SetFaceTexture(ROOM_BELOW , texids[ROOM_BELOW]);
-   m.SetFaceTexture(ROOM_NORTH , texids[ROOM_NORTH]);
-   m.SetFaceTexture(ROOM_SOUTH , texids[ROOM_SOUTH]);
-   m.SetFaceTexture(ROOM_EAST , texids[ROOM_EAST]);
-   m.SetFaceTexture(ROOM_WEST , texids[ROOM_WEST]);
+   m.SetFaceTexture(ROOM_ABOVE , texids[ROOM_ABOVE] , texids[ROOM_BELOW]);
+   m.SetFaceTexture(ROOM_NORTH , texids[ROOM_NORTH] , texids[ROOM_SOUTH]);
+   m.SetFaceTexture(ROOM_EAST , texids[ROOM_EAST] , texids[ROOM_WEST]);
    
    Allegro5SpaceCamera cam;
    
