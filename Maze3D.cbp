@@ -62,8 +62,6 @@
 		<Unit filename="src/Maze3DMain.cpp" />
 		<Unit filename="src/PathSet.cpp" />
 		<Unit filename="src/Pathset.hpp" />
-		<Unit filename="src/RNG.cpp" />
-		<Unit filename="src/RNG.hpp" />
 		<Unit filename="src/Room.cpp" />
 		<Unit filename="src/Room.hpp" />
 		<Unit filename="src/Wall.cpp" />
