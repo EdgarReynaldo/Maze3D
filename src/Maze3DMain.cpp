@@ -122,9 +122,11 @@ int main(int argc , char** argv) {
    
    
    int height = 1;
-   int depth = 10;
-   int width = 10;
+   int depth = 1;
+   int width = 1;
 
+   
+   
 /*   for (int y = 2 ; y < height ; ++y) {
       for (int z = 2 ; z < depth ; ++z) {
          for (int x = 2 ; x < width ; ++x) {

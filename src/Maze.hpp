@@ -17,7 +17,6 @@
 #include "Eagle/Vec3.hpp"
 #include "Eagle/Random.hpp"
 #include "PathSet.hpp"
-#include "RNG.hpp"
 
 
 #include "GL/gl.h"
