@@ -21,12 +21,12 @@ class Wall {
    Room* room_pos;
    Room* room_neg;
    
+public :
    bool open_pos;
    bool open_neg;
 
    int kweight;
    
-public :
    
    Wall();
    void Reset();

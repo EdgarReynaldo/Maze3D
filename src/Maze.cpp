@@ -529,7 +529,6 @@ Vec3* Maze::GetVertex(int floor , int row , int col , ROOM_FACE face , FACE_CORN
 Maze::Maze() :
       rooms(),
       walls(),
-//      faces(),
       vertices(),
       path_sets(),
       TextureIDs(),
@@ -538,12 +537,10 @@ Maze::Maze() :
       nrooms_deep(0),
       nrooms_total(0),
       nwalls_total(0),
-//      nfaces_total(0),
       nverts_total(0),
       floor_area(0),
       side_area(0),
       front_area(0),
-//      face_info(),
       rng()
 {}
 
@@ -558,7 +555,7 @@ Maze::~Maze() {
 void Maze::ClearMaze() {
    rooms.clear();
    walls.clear();
-//   faces.clear();
+   faces.clear();
 //   faces_out.clear();
    vertices.clear();
    path_sets.clear();
@@ -566,7 +563,7 @@ void Maze::ClearMaze() {
    nrooms_wide = nrooms_tall = nrooms_deep = nrooms_total = 0;
    floor_area = side_area = front_area = 0;
    nverts_total = 0;
-//   nfaces_total = 0;
+   nfaces_total = 0;
    nwalls_total = 0;
 }
 
@@ -593,6 +590,8 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
    nwalls_total = 3*nrooms_total + floor_area + side_area + front_area;
    walls.resize(nwalls_total);
 
+   nfaces_total = 2*nwalls_total;
+   faces.resize(nfaces_total);
 
    /// Reserve the path sets
    path_sets.resize(nrooms_total);
@@ -664,6 +663,12 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
                Face* fs = &ws->face_pos;
                Face* fe = &we->face_neg;
                Face* fw = &ww->face_pos;
+               faces[0] = fa;
+               faces[1] = fb;
+               faces[2] = fn;
+               faces[3] = fs;
+               faces[4] = fe;
+               faces[5] = fw;
                /// faces outside of room
                Face* fouta = &wa->face_pos;
                Face* foutb = &wb->face_neg;
@@ -671,6 +676,12 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
                Face* fouts = &ws->face_neg;
                Face* foute = &we->face_pos;
                Face* foutw = &ww->face_neg;
+               faces[6] = fouta;
+               faces[7] = foutb;
+               faces[8] = foutn;
+               faces[9] = fouts;
+               faces[10] = foute;
+               faces[11] = foutw;
                for (int j = 0 ; j < NUM_FACE_CORNERS ; ++j) {
                   Vec3* vtxa = GetVertex(GetVertexIndex(y,z,x , ROOM_ABOVE , (FACE_CORNER)j));
                   fa->SetVertex((FACE_CORNER)j , vtxa);
@@ -804,6 +815,12 @@ void Maze::Display() {
       ++w;
    }
 
+   for (unsigned int i = 0 ; i < faces.size() ; ++i) {
+//      Face* f = faces[i];
+//      f->Display();
+//      ++f;
+   }
+   
    glDisable(GL_CULL_FACE);
    glDisable(GL_TEXTURE_2D);
    glDisable(GL_DEPTH_TEST);

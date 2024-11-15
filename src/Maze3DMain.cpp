@@ -10,7 +10,7 @@
 
 
 #include "Maze.hpp"
-
+#include "Wall.hpp"
 #include "allegro5/allegro_opengl.h"
 #include "GL/gl.h"
 
@@ -223,7 +223,44 @@ int main(int argc , char** argv) {
                cam.SpinCCW(-M_PI/180.0);
             }
          }
-         
+         if (ev.type == EAGLE_EVENT_KEY_DOWN) {
+            if (ev.keyboard.keycode == EAGLE_KEY_1) {
+               m.walls[ROOM_ABOVE].open_pos = !m.walls[ROOM_ABOVE].open_pos;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_2) {
+               m.walls[ROOM_BELOW].open_pos = !m.walls[ROOM_BELOW].open_pos;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_3) {
+               m.walls[ROOM_NORTH].open_pos = !m.walls[ROOM_NORTH].open_pos;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_4) {
+               m.walls[ROOM_SOUTH].open_pos = !m.walls[ROOM_SOUTH].open_pos;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_5) {
+               m.walls[ROOM_EAST].open_pos = !m.walls[ROOM_EAST].open_pos;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_6) {
+               m.walls[ROOM_WEST].open_pos = !m.walls[ROOM_WEST].open_pos;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_7) {
+               m.walls[ROOM_ABOVE].open_neg = !m.walls[ROOM_ABOVE].open_neg;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_8) {
+               m.walls[ROOM_BELOW].open_neg = !m.walls[ROOM_BELOW].open_neg;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_9) {
+               m.walls[ROOM_NORTH].open_neg = !m.walls[ROOM_NORTH].open_neg;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_0) {
+               m.walls[ROOM_SOUTH].open_neg = !m.walls[ROOM_SOUTH].open_neg;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_MINUS) {
+               m.walls[ROOM_EAST].open_neg = !m.walls[ROOM_EAST].open_neg;
+            }
+            if (ev.keyboard.keycode == EAGLE_KEY_EQUALS) {
+               m.walls[ROOM_WEST].open_neg = !m.walls[ROOM_WEST].open_neg;
+            }
+         }
       } while (!sys->UpToDate());
       
    } while (!quit);

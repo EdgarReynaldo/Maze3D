@@ -25,7 +25,7 @@ class Maze {
 public :
    std::vector<Room> rooms;
    std::vector<Wall> walls;
-//   std::vector<Face> faces;
+   std::vector<Face*> faces;
 //   std::vector<Face> faces_out;
    std::vector<Vec3> vertices;
    std::vector<PathSet> path_sets;
@@ -37,7 +37,7 @@ public :
    int nrooms_deep;/// z (horizontal z, not vertical)
    int nrooms_total;
    int nwalls_total;
-//   int nfaces_total;
+   int nfaces_total;
    int nverts_total;
 
    int floor_area;/// width * depth
@@ -53,7 +53,6 @@ public :
 //   FaceInfo face_info[NUM_ROOM_FACES];
    
    MTRNG rng;
-   
    
    
 ///   Cube unit_cube;
