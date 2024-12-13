@@ -638,6 +638,9 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
                Wall* ws = r->walls[ROOM_SOUTH] = GetWall(y,z,x,ROOM_SOUTH);
                Wall* we = r->walls[ROOM_EAST]  = GetWall(y,z,x,ROOM_EAST);
                Wall* ww = r->walls[ROOM_WEST]  = GetWall(y,z,x,ROOM_WEST);
+               wa->face_type = wb->face_type = FACE_UPDOWN;
+               wn->face_type = ws->face_type = FACE_NORTHSOUTH;
+               we->face_type = ww->face_type = FACE_EASTWEST;
                Room* ra = r->neighbors[ROOM_ABOVE] = GetRoom(y+1,z,x);
                Room* rb = r->neighbors[ROOM_BELOW] = GetRoom(y-1,z,x);
                Room* rn = r->neighbors[ROOM_NORTH] = GetRoom(y,z+1,x);
@@ -657,6 +660,7 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
                ww->room_pos = r;
                ww->room_neg = rw;
                
+               /// Inside faces
                Face* fa = &wa->face_neg;
                Face* fb = &wb->face_pos;
                Face* fn = &wn->face_neg;
@@ -669,7 +673,8 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
                faces[3] = fs;
                faces[4] = fe;
                faces[5] = fw;
-               /// faces outside of room
+               
+               /// Faces outside of room
                Face* fouta = &wa->face_pos;
                Face* foutb = &wb->face_neg;
                Face* foutn = &wn->face_pos;
@@ -683,25 +688,43 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
                faces[10] = foute;
                faces[11] = foutw;
                for (int j = 0 ; j < NUM_FACE_CORNERS ; ++j) {
+
                   Vec3* vtxa = GetVertex(GetVertexIndex(y,z,x , ROOM_ABOVE , (FACE_CORNER)j));
                   fa->SetVertex((FACE_CORNER)j , vtxa);
                   fouta->SetVertex((FACE_CORNER)(3-j),vtxa);
+
                   Vec3* vtxb = GetVertex(GetVertexIndex(y,z,x , ROOM_BELOW , (FACE_CORNER)j));
                   fb->SetVertex((FACE_CORNER)j , vtxb);
                   foutb->SetVertex((FACE_CORNER)(3-j),vtxb);
+
                   Vec3* vtxn = GetVertex(GetVertexIndex(y,z,x , ROOM_NORTH , (FACE_CORNER)j));
                   fn->SetVertex((FACE_CORNER)j , vtxn);
                   foutn->SetVertex((FACE_CORNER)(3-j),vtxn);
+
                   Vec3* vtxs = GetVertex(GetVertexIndex(y,z,x , ROOM_SOUTH , (FACE_CORNER)j));
                   fs->SetVertex((FACE_CORNER)j , vtxs);
                   fouts->SetVertex((FACE_CORNER)(3-j),vtxs);
+
                   Vec3* vtxe = GetVertex(GetVertexIndex(y,z,x , ROOM_EAST , (FACE_CORNER)j));
                   fe->SetVertex((FACE_CORNER)j , vtxe);
                   foute->SetVertex((FACE_CORNER)(3-j),vtxe);
+
                   Vec3* vtxw = GetVertex(GetVertexIndex(y,z,x , ROOM_WEST , (FACE_CORNER)j));
                   fw->SetVertex((FACE_CORNER)j , vtxw);
                   foutw->SetVertex((FACE_CORNER)(3-j),vtxw);
                }
+               fa->ResetNormal();
+               fb->ResetNormal();
+               fn->ResetNormal();
+               fs->ResetNormal();
+               fe->ResetNormal();
+               fw->ResetNormal();
+               fouta->ResetNormal();
+               foutb->ResetNormal();
+               foutn->ResetNormal();
+               fouts->ResetNormal();
+               foute->ResetNormal();
+               foutw->ResetNormal();
             }
          }
       }
@@ -773,7 +796,7 @@ void Maze::KruskalRemoval() {
       }
       else {
          /// Outside edge, can't remove it
-         assert(0);/// These should all have been excluded
+///         assert(0);/// These should all have been excluded
       }
    }
 }
@@ -805,29 +828,15 @@ void Maze::Display() {
    glEnable(GL_CULL_FACE);
    glFrontFace(GL_CCW);
    glEnable(GL_BLEND);
-   glEnable(GL_TEXTURE_2D);
    glEnable(GL_DEPTH_TEST);
    glClear(GL_DEPTH_BUFFER_BIT);
 
    Wall* w = &walls[0];
    for (unsigned int i = 0 ; i < walls.size() ; ++i){
+      glEnable(GL_TEXTURE_2D);
       w->Display();
+      glDisable(GL_TEXTURE_2D);
+      w->Outline(EagleColor(255,127,0,255));
       ++w;
-   }
-
-   for (unsigned int i = 0 ; i < faces.size() ; ++i) {
-//      Face* f = faces[i];
-//      f->Display();
-//      ++f;
-   }
-   
-   glDisable(GL_CULL_FACE);
-   glDisable(GL_TEXTURE_2D);
-   glDisable(GL_DEPTH_TEST);
-   glDisable(GL_BLEND);
-   for (unsigned int i = 0 ; i < walls.size() ; ++i) {
-      Wall& w = walls[i];
-//      w.Outline(EagleColor(0,255,0,255));/// TODO : This results in black outlines investigate
-   }
-   
+   }   
 }

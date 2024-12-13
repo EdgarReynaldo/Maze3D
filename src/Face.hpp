@@ -48,7 +48,7 @@ enum FACE_CORNER {
    NUM_FACE_CORNERS = 4
 };
 
-struct Vec3D;
+struct Vec3;
 
 class Wall;
 
@@ -59,13 +59,17 @@ class Face {
 
    Vec3* v[NUM_FACE_CORNERS];
 
+   Vec3 normal;
+   
    GLuint texid;///< Texture id
 
 public :
    Face(Wall* parent);
    
    void Reset();
+   void ResetNormal();
 
+   
    void SetVertex(FACE_CORNER corner , Vec3* vtx);
    
 

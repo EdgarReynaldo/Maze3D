@@ -38,9 +38,19 @@ ROOM_DIRECTION GetRoomDirection(ROOM_FACE rf) {
 
 
 
+void Face::ResetNormal() {
+   
+   Vec3 veca = *v[FC_UPPERLEFT] - *v[FC_LOWERLEFT];
+   Vec3 vecb = *v[FC_LOWERRIGHT] - *v[FC_LOWERLEFT];
+   normal = CrossProduct(veca , vecb);
+}
+
+
+
 Face::Face(Wall* parent) :
       parent_wall(parent),
       v(),
+      normal(),
       texid((GLuint(-1)))
 {
 }
@@ -59,6 +69,7 @@ void Face::Reset() {
 
 void Face::SetVertex(FACE_CORNER corner , Vec3* vtx) {
    v[corner] = vtx;
+///   ResetNormal();// Not all corners may be valid yet
 }
 
 
@@ -73,18 +84,22 @@ void Face::Display() {
       
       v3 = *v[FC_UPPERLEFT];
       glTexCoord2f(0.0f , 1.0f);
+      glNormal3f(normal.x , normal.y , normal.z);
       glVertex3d(v3.x , v3.y , v3.z);
 
       v3 = *v[FC_LOWERLEFT];
       glTexCoord2f(0.0f , 0.0f);
+      glNormal3f(normal.x , normal.y , normal.z);
       glVertex3d(v3.x , v3.y , v3.z);
 
       v3 = *v[FC_LOWERRIGHT];
       glTexCoord2f(1.0f , 0.0f);
+      glNormal3f(normal.x , normal.y , normal.z);
       glVertex3d(v3.x , v3.y , v3.z);
 
       v3 = *v[FC_UPPERRIGHT];
       glTexCoord2f(1.0f , 1.0f);
+      glNormal3f(normal.x , normal.y , normal.z);
       glVertex3d(v3.x , v3.y , v3.z);
       
    glEnd();
@@ -94,10 +109,6 @@ void Face::Display() {
 void Face::Outline(EagleColor col) {
    
    Vec3 v3;
-   glDisable(GL_BLEND);
-   glDisable(GL_DEPTH_TEST);
-   glDisable(GL_TEXTURE_2D);
-   glDisable(GL_CULL_FACE);
    glBegin(GL_LINE_LOOP);
       glColor4i(col.r , col.g , col.b , col.a);
       

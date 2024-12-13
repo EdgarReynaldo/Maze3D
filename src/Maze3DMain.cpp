@@ -1,5 +1,14 @@
 
+/**
+clamkzak66 christmas wish
 
+It would be nice to see:
+
+- dungeon crawler type of game
+- rudolph the reindeer
+- random generation
+- chaos (like the one in the house the day before chrstmas)
+*/
 
 
 
@@ -146,10 +155,13 @@ int main(int argc , char** argv) {
    
    Maze m;
    m.CreateMaze(width , height , depth);
-//   m.KruskalRemoval();
+   m.KruskalRemoval();
    m.SetFaceTexture(ROOM_ABOVE , texids[ROOM_ABOVE] , texids[ROOM_BELOW]);
    m.SetFaceTexture(ROOM_NORTH , texids[ROOM_NORTH] , texids[ROOM_SOUTH]);
    m.SetFaceTexture(ROOM_EAST , texids[ROOM_EAST] , texids[ROOM_WEST]);
+   m.SetFaceTexture(ROOM_BELOW , texids[ROOM_ABOVE] , texids[ROOM_BELOW]);
+   m.SetFaceTexture(ROOM_SOUTH , texids[ROOM_NORTH] , texids[ROOM_SOUTH]);
+   m.SetFaceTexture(ROOM_WEST , texids[ROOM_EAST] , texids[ROOM_WEST]);
    
    Allegro5SpaceCamera cam;
    
@@ -162,11 +174,25 @@ int main(int argc , char** argv) {
    sys->GetSystemTimer()->Start();
    
    SetupOpenGLDebug();
-
+   
+   GLfloat lpos[4] = {5.0f , 5.0f , 5.0f , 0.0f};
+   GLfloat lcol[4] = {0.75f , 0.75f , 0.75f , 1.0f};
+   GLfloat acol[4] = {0.25f , 0.25f , 0.25f , 1.0f};
+   GLfloat dir[3] = {-1.0f , 0.0f , 0.0f};
+   
+   
+   glLightfv(GL_LIGHT0 , GL_POSITION , lpos);
+   glLightfv(GL_LIGHT0 , GL_DIFFUSE , lcol);
+   glLightfv(GL_LIGHT0 , GL_AMBIENT , acol);
+   glLightfv(GL_LIGHT0 , GL_SPOT_DIRECTION , dir);
+   
+   glEnable(GL_LIGHTING);
+   glEnable(GL_LIGHT0);
+   
    do {
       if (redraw) {
          win->DrawToBackBuffer();
-         win->Clear();
+         win->Clear(EagleColor(0,0,196));
          glClear(GL_DEPTH_BUFFER_BIT);
          cam.Setup3D(false);
 //         glEnable(GL_DEPTH_TEST);
@@ -186,6 +212,7 @@ int main(int argc , char** argv) {
             quit = true;
          }
          if (ev.type == EAGLE_EVENT_TIMER) {
+            
             if (input_key_held(EAGLE_KEY_LEFT)) {
                cam.StrafeRight(-0.1);
             }
@@ -222,6 +249,10 @@ int main(int argc , char** argv) {
             if (input_key_held(EAGLE_KEY_PAD_7)) {
                cam.SpinCCW(-M_PI/180.0);
             }
+            GLfloat lpos[4] = {(GLfloat)cam.Pos().x , (GLfloat)cam.Pos().y , (GLfloat)cam.Pos().z , 0.0f};
+            GLfloat ldir[4] = {(GLfloat)cam.Forward().x , (GLfloat)cam.Forward().y , (GLfloat)cam.Forward().z};
+            glLightfv(GL_LIGHT0 , GL_POSITION , lpos);
+            glLightfv(GL_LIGHT0 , GL_SPOT_DIRECTION , ldir);
          }
          if (ev.type == EAGLE_EVENT_KEY_DOWN) {
             if (ev.keyboard.keycode == EAGLE_KEY_1) {
