@@ -821,8 +821,8 @@ void Maze::Display() {
    glClear(GL_DEPTH_BUFFER_BIT);
 
 
-   Wall* w = &walls[0];
    for (unsigned int i = 0 ; i < walls.size() ; ++i){
+      Wall* w = &walls[i];
       if (w->face_type == FACE_UPDOWN) {continue;}
       glEnable(GL_TEXTURE_2D);
       w->Display();
