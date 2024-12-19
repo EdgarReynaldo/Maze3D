@@ -111,6 +111,8 @@ int main(int argc , char** argv) {
    
    int tw = 32;
    int th = 32;
+   EagleImage* bg = win->LoadImageFromFile("Data/Krampus24/GrayBrick.png");
+   
    EagleImage* faces[6] = {
       win->CreateImage(tw,th),
       win->CreateImage(tw,th),
@@ -125,20 +127,21 @@ int main(int argc , char** argv) {
       std::string s = dirs[i];
       win->SetDrawingTarget(faces[i]);
       win->Clear(EagleColor(255,255,255,255));
+      win->Draw(bg,0,0);
       win->DrawTextString(font , s , tw/2 , th/2 , EagleColor(0,0,0) , HALIGN_CENTER , VALIGN_CENTER);
       texids[i] = al_get_opengl_texture(GetAllegroBitmap(faces[i]));
    }
    
    
-   int height = 1;
-   int depth = 1;
-   int width = 1;
+   int height = 10;
+   int depth = 10;
+   int width = 10;
 
    
-   
-/*   for (int y = 2 ; y < height ; ++y) {
-      for (int z = 2 ; z < depth ; ++z) {
-         for (int x = 2 ; x < width ; ++x) {
+//**   
+   for (int y = 1 ; y <= height ; ++y) {
+      for (int z = 1 ; z <= depth ; ++z) {
+         for (int x = 1 ; x <= width ; ++x) {
             Maze m;
             double start = al_get_time();
             m.CreateMaze(x , y , z);
@@ -150,8 +153,8 @@ int main(int argc , char** argv) {
             printf("Kruskal Removal took %3.6lf seconds\n" , stop2 - stop);
          }
       }
-//   }
-*/
+   }
+//*/
    
    Maze m;
    m.CreateMaze(width , height , depth);
@@ -249,10 +252,10 @@ int main(int argc , char** argv) {
             if (input_key_held(EAGLE_KEY_PAD_7)) {
                cam.SpinCCW(-M_PI/180.0);
             }
-            GLfloat lpos[4] = {(GLfloat)cam.Pos().x , (GLfloat)cam.Pos().y , (GLfloat)cam.Pos().z , 0.0f};
-            GLfloat ldir[4] = {(GLfloat)cam.Forward().x , (GLfloat)cam.Forward().y , (GLfloat)cam.Forward().z};
-            glLightfv(GL_LIGHT0 , GL_POSITION , lpos);
-            glLightfv(GL_LIGHT0 , GL_SPOT_DIRECTION , ldir);
+//            GLfloat lpos[4] = {(GLfloat)cam.Pos().x , (GLfloat)cam.Pos().y , (GLfloat)cam.Pos().z , 0.0f};
+//            GLfloat ldir[4] = {(GLfloat)cam.Forward().x , (GLfloat)cam.Forward().y , (GLfloat)cam.Forward().z};
+//            glLightfv(GL_LIGHT0 , GL_POSITION , lpos);
+//            glLightfv(GL_LIGHT0 , GL_SPOT_DIRECTION , ldir);
          }
          if (ev.type == EAGLE_EVENT_KEY_DOWN) {
             if (ev.keyboard.keycode == EAGLE_KEY_1) {
