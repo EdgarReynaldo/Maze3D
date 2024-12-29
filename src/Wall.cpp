@@ -3,6 +3,7 @@
 
 
 #include "Wall.hpp"
+#include "PickMap.hpp"
 
 
 
@@ -14,8 +15,11 @@ Wall::Wall() :
       room_neg(0),
       open_pos(false),
       open_neg(false),
-      kweight(-1)
-{}   
+      kweight(-1),
+      face_pick_color()
+{
+   face_pick_color = GetNextPickingColor();
+}   
 
 
 
@@ -41,6 +45,16 @@ void Wall::Display() {
       face_neg.Display();
    }
 }
+void Wall::DisplayFill(EagleColor c) {
+   if (Open()) {return;}
+   if (!open_pos) {
+      face_pos.DisplayFill(c);
+   }
+   if (!open_neg) {
+      face_neg.DisplayFill(c);
+   }
+}
+
 
 
 
@@ -65,6 +79,14 @@ void Wall::SetOpen(bool open) {
 void Wall::SetWeight(int w) {
    kweight = w;
 }
+
+
+
+EagleColor Wall::PickColor() {
+   return face_pick_color;
+}
+
+
 
 
 

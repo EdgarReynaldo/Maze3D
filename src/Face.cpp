@@ -106,27 +106,58 @@ void Face::Display() {
 }
 
 
-void Face::Outline(EagleColor col) {
+void Face::Outline(EagleColor c) {
    
    Vec3 v3;
    glBegin(GL_LINE_LOOP);
-      glColor4i(col.r , col.g , col.b , col.a);
       
       v3 = *v[FC_UPPERLEFT];
+      glColor4i(c.r , c.g , c.b , c.a);
       glVertex3d(v3.x , v3.y , v3.z);
 
       v3 = *v[FC_LOWERLEFT];
+      glColor4i(c.r , c.g , c.b , c.a);
       glVertex3d(v3.x , v3.y , v3.z);
 
       v3 = *v[FC_LOWERRIGHT];
+      glColor4i(c.r , c.g , c.b , c.a);
       glVertex3d(v3.x , v3.y , v3.z);
 
       v3 = *v[FC_UPPERRIGHT];
+      glColor4i(c.r , c.g , c.b , c.a);
       glVertex3d(v3.x , v3.y , v3.z);
    glEnd();
 }
    
 
 
+void Face::DisplayFill(EagleColor c) {
+   
+   Vec3 v3;
+
+   glBegin(GL_TRIANGLE_FAN);
+      
+      v3 = *v[FC_UPPERLEFT];
+      glColor3i(c.r,c.g,c.b);
+      glNormal3f(normal.x , normal.y , normal.z);
+      glVertex3d(v3.x , v3.y , v3.z);
+
+      v3 = *v[FC_LOWERLEFT];
+      glColor3i(c.r,c.g,c.b);
+      glNormal3f(normal.x , normal.y , normal.z);
+      glVertex3d(v3.x , v3.y , v3.z);
+
+      v3 = *v[FC_LOWERRIGHT];
+      glColor3i(c.r,c.g,c.b);
+      glNormal3f(normal.x , normal.y , normal.z);
+      glVertex3d(v3.x , v3.y , v3.z);
+
+      v3 = *v[FC_UPPERRIGHT];
+      glColor3i(c.r,c.g,c.b);
+      glNormal3f(normal.x , normal.y , normal.z);
+      glVertex3d(v3.x , v3.y , v3.z);
+      
+   glEnd();
+}
 
    

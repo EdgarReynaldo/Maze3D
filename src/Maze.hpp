@@ -17,7 +17,7 @@
 #include "Eagle/Vec3.hpp"
 #include "Eagle/Random.hpp"
 #include "PathSet.hpp"
-
+//#include "PickMap.hpp"
 
 #include "GL/gl.h"
 
@@ -44,16 +44,7 @@ public :
    int side_area;/// height * depth
    int front_area;/// width * height
    
-//   struct FaceInfo {
-//      int index;
-//      int size;
-//      FaceInfo() : index(-1) , size(0) {}
-//   };
-
-//   FaceInfo face_info[NUM_ROOM_FACES];
-   
    MTRNG rng;
-   
    
 ///   Cube unit_cube;
 

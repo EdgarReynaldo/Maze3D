@@ -74,7 +74,8 @@ public :
    
 
    void Display();
-   void Outline(EagleColor col);
+   void DisplayFill(EagleColor c);
+   void Outline(EagleColor c);
 
 };
 

@@ -21,6 +21,8 @@ class Wall {
    Room* room_pos;
    Room* room_neg;
    
+   EagleColor face_pick_color;
+   
 public :
    bool open_pos;
    bool open_neg;
@@ -37,8 +39,9 @@ public :
    
    
    void Display();
+   void DisplayFill(EagleColor c);
    void Outline(EagleColor col);
-   
+
    
    Face* GetFacePos() {return &face_pos;}
    Face* GetFaceNeg() {return &face_neg;}
@@ -51,6 +54,8 @@ public :
    bool Open() {return open_pos && open_neg;}
    
    int Weight() {return kweight;}
+   
+   EagleColor PickColor();
    
    FACE_TYPE GetWallDirection() {return face_type;}
    

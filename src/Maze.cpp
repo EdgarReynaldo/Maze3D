@@ -654,13 +654,6 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
             Face* fs = &ws->face_pos;
             Face* fe = &we->face_neg;
             Face* fw = &ww->face_pos;
-            faces[0] = fa;
-            faces[1] = fb;
-            faces[2] = fn;
-            faces[3] = fs;
-            faces[4] = fe;
-            faces[5] = fw;
-            
             /// Faces outside of room
             Face* fouta = &wa->face_pos;
             Face* foutb = &wb->face_neg;
@@ -668,12 +661,6 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
             Face* fouts = &ws->face_neg;
             Face* foute = &we->face_pos;
             Face* foutw = &ww->face_neg;
-            faces[6] = fouta;
-            faces[7] = foutb;
-            faces[8] = foutn;
-            faces[9] = fouts;
-            faces[10] = foute;
-            faces[11] = foutw;
             for (int j = 0 ; j < NUM_FACE_CORNERS ; ++j) {
 
                Vec3* vtxa = GetVertex(GetVertexIndex(y,z,x , ROOM_ABOVE , (FACE_CORNER)j));
@@ -715,6 +702,12 @@ bool Maze::CreateMaze(int num_rooms_wide , int num_rooms_tall , int num_rooms_de
          }
       }
    }
+   
+   for (unsigned int i = 0 ; i < walls.size() ; ++i) {
+      faces[2*i + 0] = &walls[i].face_neg;
+      faces[2*i + 1] = &walls[i].face_pos;
+   }
+   
    return true;
 }
 
@@ -820,14 +813,21 @@ void Maze::Display() {
    glEnable(GL_DEPTH_TEST);
    glClear(GL_DEPTH_BUFFER_BIT);
 
+   for (int y = 0 ; y < nrooms_tall ; ++y) {
+      for (int z = 0 ; z < nrooms_deep ; ++z) {
+         for (int x = 0 ; x < nrooms_wide ; ++x) {
+            // nop
+         }
+      }
+   }
 
    for (unsigned int i = 0 ; i < walls.size() ; ++i){
       Wall* w = &walls[i];
-      if (w->face_type == FACE_UPDOWN) {continue;}
+      if (w->kweight == WEIGHT_OUTSIDE) {continue;}
       glEnable(GL_TEXTURE_2D);
       w->Display();
       glDisable(GL_TEXTURE_2D);
       w->Outline(EagleColor(255,127,0,255));
       ++w;
-   }   
+   }
 }

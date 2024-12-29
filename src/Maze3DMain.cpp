@@ -17,6 +17,7 @@ It would be nice to see:
 #include "Eagle.hpp"
 #include "Eagle/BinFileStream2.hpp"
 
+#include "PickMap.hpp"
 
 #include "Maze.hpp"
 #include "Wall.hpp"
@@ -25,72 +26,6 @@ It would be nice to see:
 
 
 
-int main2(int argc , char** argv) {
-
-   (void)argc;
-   (void)argv;
-   
-   Allegro5System* sys = GetAllegro5System();
-   EAGLE_ASSERT(sys);
-   
-   int ret = sys->Initialize(EAGLE_FULL_SETUP);
-   
-   EagleGraphicsContext* win = sys->CreateGraphicsContext("Maze game" , 1024 , 768 , EAGLE_WINDOWED | EAGLE_OPENGL);
-   
-   EagleImage* img = win->CreateImage(512,512);
-   
-   win->SetDrawingTarget(img);
-   win->Clear(EagleColor(0,255,0,255));
-   win->DrawTextString(win->DefaultFont() , "ABC" , 256.0f , 256.0f , EagleColor(255,127,0) , HALIGN_CENTER , VALIGN_CENTER);
-
-   win->DrawToBackBuffer();
-   win->Clear();
-   
-//   win->Draw(img , 256.0 , 256.0);
-//*
-
-   SetupOpenGLDebug();
-
-//   glEnable(GL_TEXTURE_2D);
-//   glEnable(GL_BLEND);
-//   glBindTexture(GL_TEXTURE_2D , al_get_opengl_texture(GetAllegroBitmap(img)));
-   
-//   Allegro5SpaceCamera cam;
-//   cam.Setup2D(1024,768);
-   
-   Maze m;
-   m.CreateMaze(3,3,3);
-   m.Display();
-/**
-   glBegin(GL_LINE_LOOP);
-      glColor3ub(0,255,0);
-      
-//      glTexCoord2f(0.0f , 1.0f);
-      glVertex3d(256.0 , 256.0 , 0.0);
-
-//      glTexCoord2f(0.0f , 0.0f);
-      glVertex3d(256.0 , 512.0 , 0.0);
-
-//      glTexCoord2f(1.0f , 0.0f);
-      glVertex3d(768.0 , 512.0 , 0.0);
-
-//      glTexCoord2f(1.0f , 1.0f);
-      glVertex3d(768.0 , 256.0 , 0.0);
-
-            
-   glEnd();
-*/
-   
-   DumpErrors();
-   
-//*/
-   win->FlipDisplay();
-   sys->Rest(3.0);
-   
-   
-   return 0;
-}
-
 
 
 int main(int argc , char** argv) {
@@ -98,20 +33,34 @@ int main(int argc , char** argv) {
    (void)argc;
    (void)argv;
    
+   al_set_config_value(al_get_system_config() , "Trace" , "Level" , "DEBUG");
    
    Allegro5System* sys = GetAllegro5System();
    EAGLE_ASSERT(sys);
    
    int ret = sys->Initialize(EAGLE_FULL_SETUP);
    
-   EagleGraphicsContext* win = sys->CreateGraphicsContext("Maze game" , 1024 , 768 , EAGLE_WINDOWED | EAGLE_OPENGL);
-
-      
-   EagleFont* font = win->GetFont("Data/Fonts/Verdana.ttf" , -20);
+   al_set_new_display_option(ALLEGRO_DEPTH_SIZE , 32 , ALLEGRO_SUGGEST);///Without this nothing looks right. We MUST create a depth buffer.
    
-   int tw = 32;
-   int th = 32;
-   EagleImage* bg = win->LoadImageFromFile("Data/Krampus24/GrayBrick.png");
+
+   int height = 10;
+   int depth = 10;
+   int width = 10;
+   Maze m;
+   m.CreateMaze(width , height , depth);
+   m.KruskalRemoval();
+   int sw = 1280;
+   int sh = 720;
+   EagleGraphicsContext* win = sys->CreateGraphicsContext("Maze game" , sw , sh , EAGLE_WINDOWED | EAGLE_OPENGL);
+   PickMap pickmap;
+   pickmap.Create(win , sw , sh);
+   
+   EagleFont* font40 = win->GetFont("Data/Fonts/Verdana.ttf" , -40);
+   EagleFont* font12 = win->GetFont("Data/Fonts/Verdana.ttf" , -20);
+   
+   int tw = 64;
+   int th = 64;
+   EagleImage* bg = win->LoadImageFromFile("Data/Krampus24/GrayBrick2.png");
    
    EagleImage* faces[6] = {
       win->CreateImage(tw,th),
@@ -128,17 +77,19 @@ int main(int argc , char** argv) {
       win->SetDrawingTarget(faces[i]);
       win->Clear(EagleColor(255,255,255,255));
       win->Draw(bg,0,0);
-      win->DrawTextString(font , s , tw/2 , th/2 , EagleColor(0,0,0) , HALIGN_CENTER , VALIGN_CENTER);
+      win->DrawTextString(font40 , s , tw/2 , th/2 , EagleColor(255,255,255) , HALIGN_CENTER , VALIGN_CENTER);
       texids[i] = al_get_opengl_texture(GetAllegroBitmap(faces[i]));
    }
    
-   
-   int height = 10;
-   int depth = 10;
-   int width = 10;
+   m.SetFaceTexture(ROOM_ABOVE , texids[ROOM_ABOVE] , texids[ROOM_BELOW]);
+   m.SetFaceTexture(ROOM_NORTH , texids[ROOM_NORTH] , texids[ROOM_SOUTH]);
+   m.SetFaceTexture(ROOM_EAST , texids[ROOM_EAST] , texids[ROOM_WEST]);
+   m.SetFaceTexture(ROOM_BELOW , texids[ROOM_ABOVE] , texids[ROOM_BELOW]);
+   m.SetFaceTexture(ROOM_SOUTH , texids[ROOM_NORTH] , texids[ROOM_SOUTH]);
+   m.SetFaceTexture(ROOM_WEST , texids[ROOM_EAST] , texids[ROOM_WEST]);
 
    
-//**   
+/**   
    for (int y = 1 ; y <= height ; ++y) {
       for (int z = 1 ; z <= depth ; ++z) {
          for (int x = 1 ; x <= width ; ++x) {
@@ -155,145 +106,142 @@ int main(int argc , char** argv) {
       }
    }
 //*/
+
+   Allegro5SpaceCamera pcam;
+   double py = 5;
+   double pz = 35;
+   double px = 5;
+   pcam.SetPosition((Vec3(px,py,pz)));
+   pcam.SetAspect(16/9.0);
+   pcam.SetHFOV(120.0);
+   pcam.LookAt(Vec3(5.0,5.0,5.0) , Vec3(0,1,0));
+   ROOM_FACE pface = ROOM_NORTH;
    
-   Maze m;
-   m.CreateMaze(width , height , depth);
-   m.KruskalRemoval();
-   m.SetFaceTexture(ROOM_ABOVE , texids[ROOM_ABOVE] , texids[ROOM_BELOW]);
-   m.SetFaceTexture(ROOM_NORTH , texids[ROOM_NORTH] , texids[ROOM_SOUTH]);
-   m.SetFaceTexture(ROOM_EAST , texids[ROOM_EAST] , texids[ROOM_WEST]);
-   m.SetFaceTexture(ROOM_BELOW , texids[ROOM_ABOVE] , texids[ROOM_BELOW]);
-   m.SetFaceTexture(ROOM_SOUTH , texids[ROOM_NORTH] , texids[ROOM_SOUTH]);
-   m.SetFaceTexture(ROOM_WEST , texids[ROOM_EAST] , texids[ROOM_WEST]);
    
-   Allegro5SpaceCamera cam;
    
-   m.Display();
+   win->Clear();
    win->FlipDisplay();
    
    bool quit = false;
    bool redraw = true;
+   bool redraw_picmap = true;
    
    sys->GetSystemTimer()->Start();
    
    SetupOpenGLDebug();
    
-   GLfloat lpos[4] = {5.0f , 5.0f , 5.0f , 0.0f};
+   GLfloat lpos[4] = {(GLfloat)px , (GLfloat)py , (GLfloat)pz , 0.0f};
    GLfloat lcol[4] = {0.75f , 0.75f , 0.75f , 1.0f};
-   GLfloat acol[4] = {0.25f , 0.25f , 0.25f , 1.0f};
-   GLfloat dir[3] = {-1.0f , 0.0f , 0.0f};
-   
+   GLfloat acol[4] = {1.0f , 1.0f , 1.0f , 1.0f};
+   GLfloat dir[3] = {0.0f , 0.0f , 3.0f};
    
    glLightfv(GL_LIGHT0 , GL_POSITION , lpos);
    glLightfv(GL_LIGHT0 , GL_DIFFUSE , lcol);
    glLightfv(GL_LIGHT0 , GL_AMBIENT , acol);
    glLightfv(GL_LIGHT0 , GL_SPOT_DIRECTION , dir);
    
-   glEnable(GL_LIGHTING);
-   glEnable(GL_LIGHT0);
+//   glEnable(GL_LIGHTING);
+//   glEnable(GL_LIGHT0);
+   int mx = sw/2;
+   int my = sh/2;
+   int mdx = 0;
+   int mdy = 0;
+   
    
    do {
       if (redraw) {
          win->DrawToBackBuffer();
          win->Clear(EagleColor(0,0,196));
          glClear(GL_DEPTH_BUFFER_BIT);
-         cam.Setup3D(false);
-//         glEnable(GL_DEPTH_TEST);
-//         glEnable(GL_BLEND);
-//         glFrontFace(GL_CCW);
-//         glEnable(GL_CULL_FACE);
+         pcam.Setup3D(false);
          m.Display();
+         pcam.Setup2D(sw,sh);
+         glFrontFace(GL_CW);
+         win->DrawTextString(font12 , std::string("p=") + pcam.Pos().ToString() , 10 , 10 , EagleColor(255,255,255));
          win->FlipDisplay();
          redraw = false;
+         if (redraw_picmap) {
+            win->SetDrawingTarget(pickmap.pickimg);
+            win->Clear(EagleColor(0,0,0,0));
+            pickmap.Display(m);
+            redraw_picmap = false;
+         }
       }
       do {
          EagleEvent ev = sys->WaitForSystemEventAndUpdateState();
+         if (ev.type == EAGLE_EVENT_MOUSE_AXES) {
+//            msbtn_held_duration;
+            mdx += mx - ev.mouse.x;
+            mdy += my - ev.mouse.y;
+            mx = ev.mouse.x;
+            my = ev.mouse.y;
+         }
          if (ev.type == EAGLE_EVENT_TIMER) {
+            if (ms_held(RMB)) {
+               /// Look around
+               if (mdx || mdy) {
+                  pcam.Turn(Vec3(pcam.Yaw() - mdx*M_PI/180.0 , pcam.Pitch() + mdy*M_PI/180.0 , 0.0) , 0.0);
+               }
+               mdx = 0;
+               mdy = 0;
+            }
             redraw = true;
          }
          if ((ev.type == EAGLE_EVENT_KEY_DOWN && ev.keyboard.keycode == EAGLE_KEY_ESCAPE) || (ev.type == EAGLE_EVENT_DISPLAY_CLOSE)) {
             quit = true;
          }
          if (ev.type == EAGLE_EVENT_TIMER) {
-            
-            if (input_key_held(EAGLE_KEY_LEFT)) {
-               cam.StrafeRight(-0.1);
+            if (input_key_held(EAGLE_KEY_W)) {
+               pcam.AdvanceForward(0.1);
             }
-            if (input_key_held(EAGLE_KEY_RIGHT)) {
-               cam.StrafeRight(0.1);
+            if (input_key_held(EAGLE_KEY_S)) {
+               pcam.AdvanceForward(-0.1);
             }
-            if (input_key_held(EAGLE_KEY_UP)) {
-               cam.ElevateUp(0.1);
+            if (input_key_held(EAGLE_KEY_D)) {
+               pcam.StrafeRight(0.1);
             }
-            if (input_key_held(EAGLE_KEY_DOWN)) {
-               cam.ElevateUp(-0.1);
+            if (input_key_held(EAGLE_KEY_A)) {
+               pcam.StrafeRight(-0.1);
             }
-            if (input_key_held(EAGLE_KEY_PAD_5)) {
-               cam.AdvanceForward(0.1);
+            if (input_key_held(EAGLE_KEY_Z)) {
+               pcam.ElevateUp(-0.1);
             }
-            if (input_key_held(EAGLE_KEY_PAD_0)) {
-               cam.AdvanceForward(-0.1);
-            }
-            if (input_key_held(EAGLE_KEY_PAD_2)) {
-               cam.PitchUp(-M_PI/180.0);// 1 degree per update
-            }
-            if (input_key_held(EAGLE_KEY_PAD_8)) {
-               cam.PitchUp(M_PI/180.0);
-            }
-            if (input_key_held(EAGLE_KEY_PAD_6)) {
-               cam.YawRight(-M_PI/180.0);
+            if (input_key_held(EAGLE_KEY_X)) {
+               pcam.ElevateUp(0.1);
             }
             if (input_key_held(EAGLE_KEY_PAD_4)) {
-               cam.YawRight(M_PI/180.0);
+               // turn left
+               pcam.YawRight(M_PI/180.0);
             }
-            if (input_key_held(EAGLE_KEY_PAD_9)) {
-               cam.SpinCCW(M_PI/180.0);
+            if (input_key_held(EAGLE_KEY_PAD_6)) {
+               // turn right
+               pcam.YawRight(-M_PI/180.0);
+            }
+            if (input_key_held(EAGLE_KEY_PAD_2)) {
+               pcam.PitchUp(-M_PI/180.0);
+            }
+            if (input_key_held(EAGLE_KEY_PAD_8)) {
+               pcam.PitchUp(M_PI/180.0);
             }
             if (input_key_held(EAGLE_KEY_PAD_7)) {
-               cam.SpinCCW(-M_PI/180.0);
+               // turn left
+               pcam.SpinCCW(-M_PI/180.0);
             }
+            if (input_key_held(EAGLE_KEY_PAD_9)) {
+               // turn left
+               pcam.SpinCCW(M_PI/180.0);
+            }
+            px = pcam.Pos().x;
+            py = pcam.Pos().y;
+            pz = pcam.Pos().z;
+            GLfloat playpos[3] = {px,py,pz};
+            GLfloat dir[3] = {pcam.Forward().x , pcam.Forward().y , pcam.Forward().z};
+            glLightfv(GL_LIGHT0 , GL_POSITION , playpos);
+            glLightfv(GL_LIGHT0 , GL_SPOT_DIRECTION , dir);
 //            GLfloat lpos[4] = {(GLfloat)cam.Pos().x , (GLfloat)cam.Pos().y , (GLfloat)cam.Pos().z , 0.0f};
 //            GLfloat ldir[4] = {(GLfloat)cam.Forward().x , (GLfloat)cam.Forward().y , (GLfloat)cam.Forward().z};
 //            glLightfv(GL_LIGHT0 , GL_POSITION , lpos);
 //            glLightfv(GL_LIGHT0 , GL_SPOT_DIRECTION , ldir);
-         }
-         if (ev.type == EAGLE_EVENT_KEY_DOWN) {
-            if (ev.keyboard.keycode == EAGLE_KEY_1) {
-               m.walls[ROOM_ABOVE].open_pos = !m.walls[ROOM_ABOVE].open_pos;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_2) {
-               m.walls[ROOM_BELOW].open_pos = !m.walls[ROOM_BELOW].open_pos;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_3) {
-               m.walls[ROOM_NORTH].open_pos = !m.walls[ROOM_NORTH].open_pos;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_4) {
-               m.walls[ROOM_SOUTH].open_pos = !m.walls[ROOM_SOUTH].open_pos;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_5) {
-               m.walls[ROOM_EAST].open_pos = !m.walls[ROOM_EAST].open_pos;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_6) {
-               m.walls[ROOM_WEST].open_pos = !m.walls[ROOM_WEST].open_pos;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_7) {
-               m.walls[ROOM_ABOVE].open_neg = !m.walls[ROOM_ABOVE].open_neg;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_8) {
-               m.walls[ROOM_BELOW].open_neg = !m.walls[ROOM_BELOW].open_neg;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_9) {
-               m.walls[ROOM_NORTH].open_neg = !m.walls[ROOM_NORTH].open_neg;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_0) {
-               m.walls[ROOM_SOUTH].open_neg = !m.walls[ROOM_SOUTH].open_neg;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_MINUS) {
-               m.walls[ROOM_EAST].open_neg = !m.walls[ROOM_EAST].open_neg;
-            }
-            if (ev.keyboard.keycode == EAGLE_KEY_EQUALS) {
-               m.walls[ROOM_WEST].open_neg = !m.walls[ROOM_WEST].open_neg;
-            }
          }
       } while (!sys->UpToDate());
       
