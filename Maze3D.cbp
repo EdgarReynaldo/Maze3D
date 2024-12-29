@@ -16,6 +16,8 @@
 					<Add option="-pedantic" />
 					<Add option="-Wextra" />
 					<Add option="-g" />
+					<Add option="-DDEBUG" />
+					<Add option="-DEAGLE_ASSERT_EXCEPTIONS" />
 				</Compiler>
 				<Linker>
 					<Add option="-lEagleDebugShared.dll" />
@@ -62,6 +64,8 @@
 		<Unit filename="src/Maze3DMain.cpp" />
 		<Unit filename="src/PathSet.cpp" />
 		<Unit filename="src/Pathset.hpp" />
+		<Unit filename="src/PickMap.cpp" />
+		<Unit filename="src/PickMap.hpp" />
 		<Unit filename="src/Room.cpp" />
 		<Unit filename="src/Room.hpp" />
 		<Unit filename="src/Wall.cpp" />
